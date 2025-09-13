@@ -9,5 +9,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: '/anoma-intent-app/',
+  base: '/anoma-intent-app-with-pages/',
 })
