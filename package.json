@@ -1,7 +1,7 @@
 {
   "name": "anoma-intent-app",
   "version": "0.0.1",
-  "private": true,
+  "private": true,`n  "homepage": "https://nkvdmax.github.io/anoma-intent-app-with-pages",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
