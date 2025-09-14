@@ -1,70 +1,24 @@
-import { verifyMessage } from "viem";
-import * as ed25519 from "@noble/ed25519";
-import { toHex } from "./utils.js";
+ï»¿import * as ed25519 from "@noble/ed25519";
+
+// Ð¿Ñ€Ð¾ÑÑ‚Ñ– ÑƒÑ‚Ð¸Ð»Ñ–Ñ‚Ð¸ Ð¿ÐµÑ€ÐµÑ‚Ð²Ð¾Ñ€ÐµÐ½Ð½Ñ, Ñ‰Ð¾Ð± Ð½Ðµ Ñ‚ÑÐ³Ð½ÑƒÑ‚Ð¸ Ð´Ð¾Ð´Ð°Ñ‚ÐºÐ¾Ð²Ñ– Ð¿Ð°ÐºÐµÑ‚Ð¸
+const hexToBytes = (hex) =>
+  typeof hex === "string"
+    ? Uint8Array.from((hex.startsWith("0x") ? hex.slice(2) : hex).match(/.{1,2}/g).map(b => parseInt(b, 16)))
+    : hex;
+
+const bytes = (x) =>
+  typeof x === "string" ? new TextEncoder().encode(x) : x;
 
 /**
- * bundle = { intent, hash, sig, scheme, meta }
- * scheme:
- *   { type: "evm", encoding:"hex" }
- *   { type: "solana", encoding:"base64" }
- * meta:
- *   { from } for EVM
- *   { pubkeyB64 } for Solana
+ * Verify Ed25519 signature
+ * @param {string|Uint8Array} publicKey - hex string (32 bytes) or Uint8Array
+ * @param {string|Uint8Array} message   - utf-8 string or Uint8Array
+ * @param {string|Uint8Array} signature - hex string (64 bytes) or Uint8Array
+ * @returns {Promise<boolean>}
  */
-export async function verifyBundle(bundle) {
-  const type = bundle?.scheme?.type;
-  if (type === "evm") return verifyEvm(bundle);
-  if (type === "solana") return verifySolana(bundle);
-  return { ok:false, reason:"Unsupported scheme for verification (sui not implemented yet)" };
-}
-
-async function verifyEvm(bundle) {
-  const { sig, meta } = bundle || {};
-  const from = meta?.from;
-  const msg = "anoma-intent:" + bundle.hash;
-  if (!from || !sig) return { ok:false, reason:"Missing from or signature" };
-  try {
-    const ok = await verifyMessage({ address: from, message: msg, signature: sig });
-    return ok ? { ok:true } : { ok:false, reason:"verifyMessage returned false" };
-  } catch (e) {
-    return { ok:false, reason:e?.message || "EVM verify failed" };
-  }
-}
-
-function b64ToBytes(b64) {
-  const bin = atob(b64);
-  const arr = new Uint8Array(bin.length);
-  for (let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
-  return arr;
-}
-
-async function verifySolana(bundle) {
-  const { sig, meta } = bundle || {};
-  const pubkeyB64 = meta?.pubkeyB64;
-  if (!pubkeyB64 || !sig) return { ok:false, reason:"Missing pubkey or signature" };
-  try {
-    const pk = b64ToBytes(pubkeyB64);
-    let sigBytes;
-    // sig ìîæå áóòè base64 àáî Uint8Array, íîðìàë³çóºìî:
-    if (typeof sig === "string") {
-      if (sig.startsWith("0x")) {
-        // íå î÷³êóâàíî äëÿ sol — ïåðåòâîðèìî ãåêñ ó áàéòè íà âñÿê âèïàäîê
-        const hex = sig.slice(2);
-        const out = new Uint8Array(hex.length/2);
-        for (let i=0;i<out.length;i++) out[i] = parseInt(hex.slice(2*i,2*i+2),16);
-        sigBytes = out;
-      } else {
-        sigBytes = b64ToBytes(sig);
-      }
-    } else if (sig?.length) {
-      sigBytes = sig;
-    } else {
-      return { ok:false, reason:"Unsupported signature format" };
-    }
-    const msg = new TextEncoder().encode("anoma-intent:" + bundle.hash);
-    const ok = await ed25519.verify(sigBytes, msg, pk);
-    return ok ? { ok:true } : { ok:false, reason:"ed25519 verify returned false" };
-  } catch (e) {
-    return { ok:false, reason:e?.message || "Solana verify failed" };
-  }
+export async function verifyEd25519(publicKey, message, signature) {
+  const pk  = hexToBytes(publicKey);
+  const sig = hexToBytes(signature);
+  const msg = bytes(message);
+  return ed25519.verify(sig, msg, pk);
 }
