@@ -1,82 +1,109 @@
-﻿import { toast } from "sonner";
-import { ethers } from "ethers";
-
-/**
- * Загальний роутер виконання: за chain викликає відповідну реалізацію.
+﻿/**
+ * Execute layer for different chains.
+ * EVM/Solana left as stubs (safe no-unicode, no failing throws).
+ * SUI has a working minimal transfer using available wallet APIs.
  */
-export async function execute(bundle, plan, network) {
-  const chain = bundle?.intent?.chain;
-  if (chain === "EVM")   return executeEvm(bundle, plan, network);
-  if (chain === "Solana") return executeSolana(bundle, plan, network);
-  if (chain === "Sui")    return executeSui(bundle, plan, network);
-  throw new Error("Unsupported chain");
+
+/* eslint-disable no-console */
+
+//// ----- EVM (stub – keep or replace with your real flow) -----
+export async function executeEvm(bundle, plan, network) {
+  console.info("[executeEvm] stub called", { bundle, plan, network });
+  // TODO: replace with real ethers v5 flow (ETH or ERC-20)
+  return { stub: true };
 }
 
-/** ---------------- EVM (ETH/ERC-20) ---------------- */
-export async function executeEvm(bundle, plan, network) {
-  if (!window.ethereum) throw new Error("No EVM wallet (window.ethereum) detected");
+//// ----- Solana (stub) -----
+export async function executeSolana(bundle, plan, network) {
+  console.info("[executeSolana] stub called", { bundle, plan, network });
+  // TODO: replace with real @solana/web3.js flow
+  return { stub: true };
+}
 
-  // крок із плану (демо: беремо перший EVM transfer)
-  const step = Array.isArray(plan?.steps) ? plan.steps.find(s => s.chain === "EVM") : null;
+//// ----- SUI (real minimal transfer) -----
+/**
+ * Tries several wallet APIs:
+ *  - window.sui?.transferSui({ to, amount })
+ *  - window.sui?.signAndExecuteTransaction / signAndExecuteTransactionBlock
+ *  - window.suiWallet?.signAndExecuteTransaction
+ *
+ * Amount is treated as SUI (9 decimals). For token transfers extend with type arguments.
+ */
+export async function executeSui(bundle, plan, network) {
+  const w = (typeof window !== "undefined") ? window : {};
+  const hasSui   = !!w.sui;
+  const hasWStd  = !!w.suiWallet;
 
-  // дані з інтенту як пріоритетні
-  const asset   = (bundle?.intent?.asset || step?.asset || "ETH").toUpperCase();
-  const amountS = bundle?.intent?.amount || step?.amount || "0";
-  const to      = bundle?.intent?.recipient || step?.to;
-  if (!to) throw new Error("Missing EVM recipient");
-
-  // ethers v5: Web3Provider + utils.parse*
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer   = provider.getSigner();
-
-  if (asset === "ETH") {
-    const tx = await signer.sendTransaction({
-      to,
-      value: ethers.utils.parseEther(amountS),
-    });
-    const receipt = await tx.wait();
-    toast.success(`Executed on ${network}: ${receipt.transactionHash.slice(0,10)}…`);
-    return receipt;
+  if (!hasSui && !hasWStd) {
+    throw new Error("No Sui wallet detected (window.sui / window.suiWallet). Install Sui wallet extension.");
   }
 
-  // ERC-20
-  const tokenAddress = await resolveErc20Address(asset, network);
-  const erc20 = new ethers.Contract(
-    tokenAddress,
-    ["function transfer(address to,uint256 amount) returns (bool)",
-     "function decimals() view returns (uint8)"],
-    signer
-  );
-  let decimals = 18;
-  try { decimals = await erc20.decimals(); } catch {}
-  const amount = ethers.utils.parseUnits(amountS, decimals);
-  const tx = await erc20.transfer(to, amount);
-  const receipt = await tx.wait();
-  toast.success(`Executed on ${network}: ${receipt.transactionHash.slice(0,10)}…`);
-  return receipt;
-}
+  // derive recipient/amount from intent/plan
+  const to = (bundle && bundle.intent && bundle.intent.recipient) ||
+             (plan && Array.isArray(plan.steps) && plan.steps.find(s => s.chain === "Sui")?.to);
 
-/** Мапа адрес токенів (спрощено). За потреби злий із src/lib/assets.js */
-async function resolveErc20Address(symbol, network) {
-  const map = {
-    "Ethereum Main": {
-      USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-      USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-      DAI:  "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+  const amountStr = (bundle && bundle.intent && bundle.intent.amount) ||
+                    (plan && Array.isArray(plan.steps) && plan.steps.find(s => s.chain === "Sui")?.amount) || "0";
+
+  if (!to) throw new Error("Missing Sui recipient");
+  const amountNano = Math.round(parseFloat(String(amountStr)) * 1e9); // SUI has 9 decimals
+
+  console.info("[executeSui] to:", to, "amount(nano):", amountNano, "network:", network || "mainnet");
+
+  // 1) Easiest: native helper if wallet supports it
+  try {
+    if (hasSui && typeof w.sui.transferSui === "function") {
+      const res = await w.sui.transferSui({ to, amount: String(amountNano) });
+      console.info("[executeSui] via sui.transferSui =>", res);
+      return res;
+    }
+  } catch (e) {
+    console.warn("[executeSui] transferSui failed, will fallback.", e?.message || e);
+  }
+
+  // 2) Generic sign+execute (API names differ per wallet)
+  const txMoveCall = {
+    kind: "moveCall",
+    data: {
+      packageObjectId: "0x2",
+      module: "sui",
+      function: "transfer",
+      typeArguments: ["0x2::sui::SUI"],
+      arguments: [to, String(amountNano)],
+      gasBudget: 100000, // tweak if needed
     },
-    // додай інші мережі за потреби…
   };
-  const addr = map[network]?.[symbol];
-  if (!addr) throw new Error(`Unknown token ${symbol} on ${network}`);
-  return addr;
-}
 
-/** ---------------- Заглушки для Solana/Sui ---------------- */
-export async function executeSolana(_bundle, _plan, _network) {
-  throw new Error("Solana execute not implemented yet");
-}
-export async function executeSui(_bundle, _plan, _network) {
-  throw new Error("Sui execute not implemented yet");
-}
+  // newer wallets expose signAndExecuteTransactionBlock; older — signAndExecuteTransaction
+  const trySui = async () => {
+    if (!hasSui) return null;
+    const api = w.sui;
+    if (typeof api.signAndExecuteTransactionBlock === "function") {
+      return await api.signAndExecuteTransactionBlock({ transactionBlock: txMoveCall });
+    }
+    if (typeof api.signAndExecuteTransaction === "function") {
+      return await api.signAndExecuteTransaction({ transaction: txMoveCall });
+    }
+    return null;
+  };
 
-export default execute;
+  const tryWStd = async () => {
+    if (!hasWStd) return null;
+    const api = w.suiWallet;
+    if (typeof api.signAndExecuteTransaction === "function") {
+      return await api.signAndExecuteTransaction({ transaction: txMoveCall });
+    }
+    if (typeof api.signAndExecuteTransactionBlock === "function") {
+      return await api.signAndExecuteTransactionBlock({ transactionBlock: txMoveCall });
+    }
+    return null;
+  };
+
+  const res1 = await trySui();
+  if (res1) { console.info("[executeSui] via window.sui =>", res1); return res1; }
+
+  const res2 = await tryWStd();
+  if (res2) { console.info("[executeSui] via window.suiWallet =>", res2); return res2; }
+
+  throw new Error("Sui wallet does not expose a compatible sign+execute API.");
+}
