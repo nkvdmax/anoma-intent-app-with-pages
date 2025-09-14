@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+ï»¿import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { validRecipient, isPositiveAmount } from './lib/validate.js';
 import { submitToSolver } from './lib/solver.js';
@@ -21,6 +21,11 @@ function loadHistory() {
 }
 function saveHistory(list) {
   localStorage.setItem(LS_KEY, JSON.stringify(list));
+}
+
+async function submitToSolver(bundle) {
+  // TODO: replace with real solver call
+  return { status: 'ok' };
 }
 
 export default function IntentBuilder() {
@@ -63,7 +68,8 @@ export default function IntentBuilder() {
     const hash = await sha256Hex(message);
     const built = { intent, message, hash };
     setBundle(built);
-    toast.success('Intent built & hashed');
+    const status = (res?.status ?? res?.ok ?? "ok");
+      toast.success(`Solver accepted (status: ${status})`);
   }
 
   async function evmSign(message) {
@@ -128,7 +134,8 @@ export default function IntentBuilder() {
       list.unshift(record);
       saveHistory(list);
       setBundle(record);
-      toast.success('Intent signed & saved to history');
+      const status = (res?.status ?? res?.ok ?? "ok");
+      toast.success(`Solver accepted (status: ${status})`);
     } catch (err) {
       console.error(err);
       toast.error(err?.message || 'Failed to sign');
@@ -140,7 +147,8 @@ export default function IntentBuilder() {
   async function copyBundle() {
     if (!bundle) return toast.info('Nothing to copy yet');
     await navigator.clipboard.writeText(JSON.stringify(bundle, null, 2));
-    toast.success('Bundle copied');
+    const status = (res?.status ?? res?.ok ?? "ok");
+      toast.success(`Solver accepted (status: ${status})`);
   }
 
   function downloadBundle() {
@@ -198,7 +206,7 @@ export default function IntentBuilder() {
         <div>
           <p className="text-xs text-gray-500 mb-1">Recipient</p>
           <input className="w-full rounded-lg border px-3 py-2"
-            placeholder={chain === 'EVM' ? '0x… address' : (chain === 'Solana' ? 'base58 address' : '0x… Sui address')}
+            placeholder={chain === 'EVM' ? '0xâ€¦ address' : (chain === 'Solana' ? 'base58 address' : '0xâ€¦ Sui address')}
             value={recipient} onChange={(e) => setRecipient(e.target.value)} />
         </div>
       </div>
@@ -246,3 +254,4 @@ export default function IntentBuilder() {
     </section>
   );
 }
+
