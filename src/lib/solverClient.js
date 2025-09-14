@@ -1,63 +1,37 @@
-﻿import { makeCanonicalIntent, canonicalHash } from './canonical.js';
+﻿import { canonicalHash, makeCanonicalIntent } from './canonical.js';
 
-function endpoint(){
-  const url = import.meta?.env?.VITE_SOLVER_URL || '';
-  return (url||'').trim();
-}
+const SOLVER_URL = import.meta.env.VITE_SOLVER_URL || '';
 
-async function tryRealSolver(bundle){
-  const url = endpoint();
-  if(!url) return null;
-  const r = await fetch(url.replace(/\/$/,'') + '/solve-intent', {
-    method:'POST',
-    headers:{'content-type':'application/json'},
-    body: JSON.stringify(bundle),
+export async function solveIntent(rawBundle) {
+  const payload = { bundle: rawBundle };
+  if (!SOLVER_URL) return mockSolve(payload);
+
+  const r = await fetch(SOLVER_URL.replace(/\/+$/,'') + '/solve-intent', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
   });
-  if(!r.ok) throw new Error('Solver HTTP '+r.status);
+  if (!r.ok) throw new Error('Solver HTTP ' + r.status);
   return await r.json();
 }
 
-// дуже простий мок-план (для демо)
-function mockPlan(bundle){
-  const steps = [{
-    chain: bundle.intent.chain,
-    action: 'transfer',
-    asset: bundle.intent.asset,
-    amount: bundle.intent.amount,
-    to: bundle.intent.recipient
-  }];
-  return { planId: 'mock-'+Date.now(), steps, quote:{fee:'0', estTimeSec: 5}, signature:'', verified:false };
+export async function verifyPlan(plan, intentRaw) {
+  if (!plan) return { ok:false, reason:'empty plan' };
+  const h = await canonicalHash(intentRaw);
+  if (plan.intentHash && plan.intentHash.toLowerCase() !== h.toLowerCase())
+    return { ok:false, reason:'intentHash mismatch' };
+  return { ok:true };
 }
 
-export async function solveIntent(bundle){
-  // нормалізація і контрольний хеш на клієнті
-  const canonical = makeCanonicalIntent(bundle.intent);
-  const canonHash = await canonicalHash(JSON.stringify(canonical));
-  const augmented = { ...bundle, canonical, canonHash };
-
-  try {
-    const real = await tryRealSolver(augmented);
-    if(real) return { ...real, source:'remote', canonical, canonHash };
-  } catch(e){
-    console.warn('Solver failed, using mock:', e?.message||e);
-  }
-  return { ...mockPlan(augmented), source:'mock', canonical, canonHash };
-}
-/**
- * verifyPlan(plan): light client-side validation stub.
- * TODO: replace with real cryptographic / rules-based checks returned by Solver.
- */
-export async function verifyPlan(plan) {
-  try {
-    // базова перевірка структури
-    const ok =
-      !!plan &&
-      typeof plan === 'object' &&
-      Array.isArray(plan.steps ?? []) &&
-      (plan.chain == null || typeof plan.chain === 'string');
-
-    return { ok, reason: ok ? '' : 'Invalid plan structure', plan };
-  } catch (e) {
-    return { ok: false, reason: e?.message || 'verify failed', plan };
-  }
+async function mockSolve({ bundle }) {
+  return {
+    plan: {
+      intentHash: await canonicalHash(bundle.intent),
+      steps: [
+        { chain: bundle.intent.chain, action:'transfer', asset: bundle.intent.asset, amount: bundle.intent.amount, to: bundle.intent.recipient }
+      ],
+      fees: { estimate: '0' }
+    },
+    routes: [{ score: 1.0, hops: 1 }],
+    receipt: { mock: true }
+  };
 }
