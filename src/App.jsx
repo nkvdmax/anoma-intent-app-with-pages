@@ -1,22 +1,11 @@
-import React, { useMemo, useState } from "react";
+ï»¿import React, { useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
-import IntentBuilder from "./IntentBuilder.jsx";`r`nimport History.jsx";
+import IntentBuilder from "./IntentBuilder.jsx";
+import History from "./History.jsx";
 
 function short(addr) {
-  if (!addr) return "—";
-  return addr.length > 12 ? addr.slice(0, 6) + "…" + addr.slice(-4) : addr;
-}
-
-function Section({ title, icon, children }) {
-  return (
-    <section className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
-      <div className="flex items-center gap-2">
-        <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-slate-100">{icon}</span>
-        <h2 className="text-lg font-medium">{title}</h2>
-      </div>
-      {children}
-    </section>
-  );
+  if (!addr) return "-";
+  return addr.slice(0, 6) + "..." + addr.slice(-4);
 }
 
 const EVM_TARGET = {
@@ -76,7 +65,7 @@ export default function App() {
   async function ensureTargetNetwork() {
     const id = (await getChainId())?.toLowerCase();
     if (id !== EVM_TARGET.chainIdHex) {
-      toast.info("Switching to " + EVM_TARGET.name + "…");
+      toast.info("Switching to " + EVM_TARGET.name + "â€¦");
       await switchEvmNetwork();
     }
   }
@@ -300,9 +289,9 @@ export default function App() {
 
         {/* Tailwind check */}
         <Section title="Tailwind" icon="?">
-          <p className="text-gray-600">If you can see a colored button and normal text — Tailwind is working correctly.</p>
+          <p className="text-gray-600">If you can see a colored button and normal text â€” Tailwind is working correctly.</p>
           <div className="flex gap-3">
-            <input className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Intent note (any text)…" value={note} onChange={(e) => setNote(e.target.value)} />
+            <input className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Intent note (any text)â€¦" value={note} onChange={(e) => setNote(e.target.value)} />
             <button className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 active:bg-indigo-800" onClick={() => { toast.success("Intent submitted!"); setNote(""); }}>
               Submit Intent
             </button>
