@@ -1,38 +1,44 @@
-import { createHash } from "crypto";
-
-/**
- * Детерміноване сортування ключів і серіалізація
+п»ї/**
+ * РљР°РЅРѕРЅС–Р·Р°С†С–СЏ (СЃС‚Р°Р±С–Р»СЊРЅРµ СЃРѕСЂС‚СѓРІР°РЅРЅСЏ РєР»СЋС‡С–РІ) + SHA-256 С‡РµСЂРµР· Web Crypto.
+ * РџСЂР°С†СЋС” РІ Р±СЂР°СѓР·РµСЂС– Р№ Сѓ CI Р±РµР· node:crypto.
  */
-export function canonicalize(obj) {
+
+function canonicalize(obj) {
   if (obj === null || typeof obj !== "object") return obj;
   if (Array.isArray(obj)) return obj.map(canonicalize);
-  return Object.keys(obj).sort().reduce((res, key) => {
-    res[key] = canonicalize(obj[key]);
-    return res;
+  return Object.keys(obj).sort().reduce((acc, k) => {
+    acc[k] = canonicalize(obj[k]);
+    return acc;
   }, {});
 }
 
-/**
- * Створює SHA-256 хеш з канонічного JSON
- */
-export function canonicalHash(obj) {
-  const canon = canonicalize(obj);
-  const json = JSON.stringify(canon);
-  return createHash("sha256").update(json).digest("hex");
+function encUtf8(str) {
+  return new TextEncoder().encode(str);
 }
 
-/**
- * Допоміжне: будує канонічний інтент
- */
-export function makeCanonicalIntent(intent) {
-  return {
-    ...intent,
-    id: canonicalHash({
-      chain: intent.chain,
-      asset: intent.asset,
-      amount: intent.amount,
-      recipient: intent.recipient,
-      note: intent.note || "",
-    }),
-  };
+function toHex(u8) {
+  let out = "";
+  for (let i = 0; i < u8.length; i++) out += u8[i].toString(16).padStart(2, "0");
+  return out;
+}
+
+/** РџРѕРІРµСЂС‚Р°С” hex-СЂСЏРґРѕРє SHA-256 РІС–Рґ РєР°РЅРѕРЅС–С‡РЅРѕРіРѕ JSON */
+export async function canonicalHash(obj) {
+  const json = JSON.stringify(canonicalize(obj));
+  const bytes = encUtf8(json);
+  const digest = await (globalThis.crypto?.subtle?.digest("SHA-256", bytes));
+  if (!digest) throw new Error("Web Crypto not available");
+  return toHex(new Uint8Array(digest));
+}
+
+/** Р—Р±РёСЂР°С” РєР°РЅРѕРЅС–С‡РЅРёР№ С–РЅС‚РµРЅС‚ С– РґРѕРґР°С” РґРµС‚РµСЂРјС–РЅРѕРІР°РЅРёР№ id */
+export async function makeCanonicalIntent(intent) {
+  const id = await canonicalHash({
+    chain: intent.chain,
+    asset: intent.asset,
+    amount: intent.amount,
+    recipient: intent.recipient,
+    note: intent.note ?? "",
+  });
+  return { ...intent, id };
 }
