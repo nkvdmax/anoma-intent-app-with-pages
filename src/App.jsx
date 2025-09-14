@@ -1,64 +1,29 @@
-import React, { useState } from 'react';
-import { Toaster, toast } from 'sonner';
+п»їimport { Toaster, toast } from 'sonner'
 
 export default function App() {
-  const [value, setValue] = useState('');
-
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <Toaster position="top-right" richColors />
-      <header className="border-b bg-white">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">
-            <span className="text-indigo-600">Anoma</span> Intent Prototype
-          </h1>
-          <a
-            className="text-sm text-indigo-600 hover:text-indigo-700"
-            href="https://nkvdmax.github.io/anoma-intent-app-with-pages/"
-          >
-            /anoma-intent-app-with-pages
-          </a>
-        </div>
-      </header>
+    <div className="p-8 space-y-6">
+      <h1 className="text-2xl font-bold text-indigo-700">Anoma Intent Prototype</h1>
+      <div className="p-4 rounded-lg shadow bg-white space-y-2">
+        <h2 className="text-lg font-semibold">рџљЂ Tailwind</h2>
+        <p className="text-gray-600">
+          РЇРєС‰Рѕ С‚Рё Р±Р°С‡РёС€ РєРѕР»СЊРѕСЂРѕРІСѓ РєРЅРѕРїРєСѓ С– РЅРѕСЂРјР°Р»СЊРЅРёР№ С‚РµРєСЃС‚ вЂ” Р·РЅР°С‡РёС‚СЊ Tailwind РїСЂР°С†СЋС”.
+        </p>
+        <button
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 active:bg-indigo-800"
+          onClick={() => toast.success("вњ… Intent submitted!")}
+        >
+          Submit Intent
+        </button>
+      </div>
 
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        <section className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
-          <h2 className="text-lg font-medium">Перевірка Tailwind</h2>
-          <p className="text-gray-600">
-            Якщо цей блок має білий фон, округлення та тінь — Tailwind працює.
-          </p>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="p-4 rounded-lg bg-white shadow">рџЊђ Vite + Pages</div>
+        <div className="p-4 rounded-lg bg-white shadow">рџЋЁ Tailwind</div>
+        <div className="p-4 rounded-lg bg-white shadow">рџ”” Sonner Toast</div>
+      </div>
 
-          <div className="flex gap-3">
-            <input
-              className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Введи будь-що…"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-            />
-            <button
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 active:bg-indigo-800"
-              onClick={() => toast.success(`Intent submitted: ${value || '—'}`)}
-            >
-              Надіслати інтент
-            </button>
-          </div>
-        </section>
-
-        <section className="grid sm:grid-cols-3 gap-4">
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-sm text-gray-500">Статус</p>
-            <p className="mt-1 font-medium text-emerald-600">Ок</p>
-          </div>
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-sm text-gray-500">Білд</p>
-            <p className="mt-1 font-medium">Vite + Pages</p>
-          </div>
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-sm text-gray-500">UI</p>
-            <p className="mt-1 font-medium">Tailwind + Sonner</p>
-          </div>
-        </section>
-      </main>
+      <Toaster richColors />
     </div>
-  );
+  )
 }
