@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { validRecipient, isPositiveAmount } from './lib/validate.js';
 import { ASSETS, resolveAssetAddress } from './lib/assets.js';
@@ -175,7 +175,7 @@ export default function IntentBuilder() {
   return (
     <section className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
       <div className="flex items-center gap-2">
-        <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-slate-100">🧩</span>
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-slate-100">??</span>
         <h2 className="text-lg font-medium">Intent</h2>
       </div>
 
@@ -205,7 +205,7 @@ export default function IntentBuilder() {
         <div>
           <p className="text-xs text-gray-500 mb-1">Recipient</p>
           <input className="w-full rounded-lg border px-3 py-2"
-            placeholder={chain === 'EVM' ? '0x… address' : (chain === 'Solana' ? 'base58 address' : '0x… Sui address')}
+            placeholder={chain === 'EVM' ? '0x� address' : (chain === 'Solana' ? 'base58 address' : '0x� Sui address')}
             value={recipient} onChange={(e) => setRecipient(e.target.value)} />
         </div>
       </div>
