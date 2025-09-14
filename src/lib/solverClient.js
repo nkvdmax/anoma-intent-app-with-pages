@@ -43,3 +43,21 @@ export async function solveIntent(bundle){
   }
   return { ...mockPlan(augmented), source:'mock', canonical, canonHash };
 }
+/**
+ * verifyPlan(plan): light client-side validation stub.
+ * TODO: replace with real cryptographic / rules-based checks returned by Solver.
+ */
+export async function verifyPlan(plan) {
+  try {
+    // базова перевірка структури
+    const ok =
+      !!plan &&
+      typeof plan === 'object' &&
+      Array.isArray(plan.steps ?? []) &&
+      (plan.chain == null || typeof plan.chain === 'string');
+
+    return { ok, reason: ok ? '' : 'Invalid plan structure', plan };
+  } catch (e) {
+    return { ok: false, reason: e?.message || 'verify failed', plan };
+  }
+}
