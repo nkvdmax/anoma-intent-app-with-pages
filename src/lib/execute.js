@@ -1,4 +1,4 @@
-﻿import { toast } from "sonner";
+import { toast } from "sonner";
 import { executeEvmStep } from "./execute-evm";
 
 export async function execute(plan, bundle, networkName) {
@@ -20,6 +20,6 @@ export async function execute(plan, bundle, networkName) {
     toast.error(e?.message || "Execute failed");
     throw e;
   }
-  toast.success(\Executed on \: \…\);
+  toast.success(\Executed on \: \�\);
   return receipt;
 }
