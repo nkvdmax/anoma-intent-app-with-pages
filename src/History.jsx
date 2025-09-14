@@ -59,7 +59,7 @@ export default function History() {
           <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-slate-100">??</span>
           <h2 className="text-lg font-medium">History</h2>
         </div>
-        <p className="text-gray-500 text-sm">No items yet — sign an intent first.</p>
+        <p className="text-gray-500 text-sm">No items yet â€” sign an intent first.</p>
       </section>
     );
   }

@@ -2,10 +2,10 @@ import * as ed from "@noble/ed25519";
 
 /**
  * Verify a bundle { sig, msg, pk }:
- *  - sig: Uint8Array або hex-рядок ("0x..." або без префікса)
- *  - pk : Uint8Array або hex-рядок
- *  - msg: звичайний рядок (UTF-8)
- * Повертає Promise<boolean>.
+ *  - sig: Uint8Array Р°Р±Рѕ hex-СЂСЏРґРѕРє ("0x..." Р°Р±Рѕ Р±РµР· РїСЂРµС„С–РєСЃР°)
+ *  - pk : Uint8Array Р°Р±Рѕ hex-СЂСЏРґРѕРє
+ *  - msg: Р·РІРёС‡Р°Р№РЅРёР№ СЂСЏРґРѕРє (UTF-8)
+ * РџРѕРІРµСЂС‚Р°С” Promise<boolean>.
  */
 export async function verifyBundle({ sig, msg, pk }) {
   const hexToBytes = (hex) => {

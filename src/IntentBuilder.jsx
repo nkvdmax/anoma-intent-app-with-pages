@@ -148,7 +148,7 @@ export default function IntentBuilder() {
         <div>
           <p className="text-xs text-gray-500 mb-1">Recipient</p>
           <input className="w-full rounded-lg border px-3 py-2"
-            placeholder={chain === 'EVM' ? '0x… address' : 'recipient'}
+            placeholder={chain === 'EVM' ? '0xâ€¦ address' : 'recipient'}
             value={recipient} onChange={(e) => setRecipient(e.target.value)} />
         </div>
       </div>

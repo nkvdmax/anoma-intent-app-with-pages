@@ -7,7 +7,7 @@ export async function mockSolve(bundle) {
     solutionId: crypto.randomUUID(),
     receivedHash: bundle.hash,
     route: ["client", "solver"],
-    // echo back minimal ìplanî
+    // echo back minimal ‚Äúplan‚Äù
     plan: { action: "transfer", chain: bundle?.intent?.chain, to: bundle?.intent?.to, amount: bundle?.intent?.amount, asset: bundle?.intent?.asset },
   };
 }

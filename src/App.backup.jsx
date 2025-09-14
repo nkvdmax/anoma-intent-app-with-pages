@@ -37,7 +37,7 @@ export default function App() {
         {/* Wallet block */}
         <section className="bg-white rounded-xl shadow-sm border p-6 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-indigo-600">🔌</span>
+            <span className="text-indigo-600">рџ”Њ</span>
             <h2 className="text-lg font-medium">Wallet</h2>
           </div>
 
@@ -47,7 +47,7 @@ export default function App() {
               onClick={() => connect()}
               disabled={isConnecting}
             >
-              {isConnecting ? 'Connecting…' : 'Connect Wallet'}
+              {isConnecting ? 'ConnectingвЂ¦' : 'Connect Wallet'}
             </button>
           ) : (
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -67,17 +67,17 @@ export default function App() {
         {/* Tailwind check + simple intent form */}
         <section className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
           <div className="flex items-center gap-2">
-            <span className="text-indigo-600">⚡</span>
+            <span className="text-indigo-600">вљЎ</span>
             <h2 className="text-lg font-medium">Tailwind</h2>
           </div>
           <p className="text-gray-600">
-            Якщо бачиш кольорові кнопки й акуратні картки — Tailwind підключений правильно.
+            РЇРєС‰Рѕ Р±Р°С‡РёС€ РєРѕР»СЊРѕСЂРѕРІС– РєРЅРѕРїРєРё Р№ Р°РєСѓСЂР°С‚РЅС– РєР°СЂС‚РєРё вЂ” Tailwind РїС–РґРєР»СЋС‡РµРЅРёР№ РїСЂР°РІРёР»СЊРЅРѕ.
           </p>
 
           <div className="flex gap-3">
             <input
               className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Intent note (довільний текст)…"
+              placeholder="Intent note (РґРѕРІС–Р»СЊРЅРёР№ С‚РµРєСЃС‚)вЂ¦"
               value={value}
               onChange={(e) => setValue(e.target.value)}
             />

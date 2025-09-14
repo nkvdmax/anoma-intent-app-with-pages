@@ -2,7 +2,7 @@ import { canonicalJSONStringify } from "./utils.js";
 
 export const INTENT_VERSION = "0.1";
 
-/** Мінімальна валідація нашого "transfer" інтента */
+/** РњС–РЅС–РјР°Р»СЊРЅР° РІР°Р»С–РґР°С†С–СЏ РЅР°С€РѕРіРѕ "transfer" С–РЅС‚РµРЅС‚Р° */
 export function validateIntent(i) {
   if (!i || typeof i !== "object") throw new Error("Intent must be object");
   if (i.v !== INTENT_VERSION) throw new Error("Unsupported intent version");
@@ -16,7 +16,7 @@ export function validateIntent(i) {
   return true;
 }
 
-/** Конструктор інтента */
+/** РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ С–РЅС‚РµРЅС‚Р° */
 export function makeIntent({ chain, asset, amount, to }) {
   const intent = {
     v: INTENT_VERSION,
@@ -32,7 +32,7 @@ export function makeIntent({ chain, asset, amount, to }) {
   return intent;
 }
 
-/** Хеш інтента (SHA-256 від канонічного JSON) */
+/** РҐРµС€ С–РЅС‚РµРЅС‚Р° (SHA-256 РІС–Рґ РєР°РЅРѕРЅС–С‡РЅРѕРіРѕ JSON) */
 export async function hashIntent(intent) {
   validateIntent(intent);
   const text = canonicalJSONStringify(intent);

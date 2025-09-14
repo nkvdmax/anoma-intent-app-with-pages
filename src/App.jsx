@@ -65,7 +65,7 @@ export default function App() {
   async function ensureTargetNetwork() {
     const id = (await getChainId())?.toLowerCase();
     if (id !== EVM_TARGET.chainIdHex) {
-      toast.info("Switching to " + EVM_TARGET.name + "…");
+      toast.info("Switching to " + EVM_TARGET.name + "â€¦");
       await switchEvmNetwork();
     }
   }
@@ -289,9 +289,9 @@ export default function App() {
 
         {/* Tailwind check */}
         <Section title="Tailwind" icon="?">
-          <p className="text-gray-600">If you can see a colored button and normal text — Tailwind is working correctly.</p>
+          <p className="text-gray-600">If you can see a colored button and normal text â€” Tailwind is working correctly.</p>
           <div className="flex gap-3">
-            <input className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Intent note (any text)…" value={note} onChange={(e) => setNote(e.target.value)} />
+            <input className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Intent note (any text)â€¦" value={note} onChange={(e) => setNote(e.target.value)} />
             <button className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 active:bg-indigo-800" onClick={() => { toast.success("Intent submitted!"); setNote(""); }}>
               Submit Intent
             </button>

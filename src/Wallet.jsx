@@ -9,7 +9,7 @@ export default function Wallet() {
   const chainId = useChainId();
   const { chains, switchChain, status: switchStatus, error: switchError } = useSwitchChain();
 
-  const short = (a) => a ? `${a.slice(0,6)}�${a.slice(-4)}` : "";
+  const short = (a) => a ? `${a.slice(0,6)}пїЅ${a.slice(-4)}` : "";
 
   return (
     <div className="bg-white rounded-xl border shadow-sm p-4 space-y-3">
@@ -27,7 +27,7 @@ export default function Wallet() {
               disabled={!c.ready || connectStatus === "pending"}
               title={!c.ready ? "Connector not ready" : ""}
             >
-              {connectStatus === "pending" ? "Connecting�" : `Connect ${c.name}`}
+              {connectStatus === "pending" ? "ConnectingпїЅ" : `Connect ${c.name}`}
             </button>
           ))}
         </div>
