@@ -1,4 +1,4 @@
-﻿import { canonicalizeIntent, sha256Hex } from './canonical.js';
+﻿import { makeCanonicalIntent, canonicalHash } from './canonical.js';
 
 function endpoint(){
   const url = import.meta?.env?.VITE_SOLVER_URL || '';
@@ -31,8 +31,8 @@ function mockPlan(bundle){
 
 export async function solveIntent(bundle){
   // нормалізація і контрольний хеш на клієнті
-  const canonical = canonicalizeIntent(bundle.intent);
-  const canonHash = await sha256Hex(JSON.stringify(canonical));
+  const canonical = makeCanonicalIntent(bundle.intent);
+  const canonHash = await canonicalHash(JSON.stringify(canonical));
   const augmented = { ...bundle, canonical, canonHash };
 
   try {
