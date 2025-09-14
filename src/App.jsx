@@ -1,20 +1,20 @@
-﻿import React, { useState } from 'react'
-import { Toaster, toast } from 'sonner'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
-import { injected } from 'wagmi/connectors'
+﻿import React, { useState } from "react";
+import { Toaster, toast } from "sonner";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { injected } from "wagmi/connectors";
 
 export default function App() {
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState("");
 
-  const { address, isConnected } = useAccount()
+  const { address, isConnected } = useAccount();
   const { connect, isPending: isConnecting } = useConnect({
     connector: injected(),
-    onSuccess: () => toast.success('Wallet connected'),
-    onError: (e) => toast.error(e?.message ?? 'Connection failed'),
-  })
+    onSuccess: () => toast.success("Wallet connected"),
+    onError: (e) => toast.error(e?.message ?? "Connection failed"),
+  });
   const { disconnect } = useDisconnect({
-    onSuccess: () => toast('Disconnected'),
-  })
+    onSuccess: () => toast("Disconnected"),
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -34,7 +34,7 @@ export default function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        {/* Wallet block */}
+        {/* Wallet */}
         <section className="bg-white rounded-xl shadow-sm border p-6 space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-indigo-600">🔌</span>
@@ -47,7 +47,7 @@ export default function App() {
               onClick={() => connect()}
               disabled={isConnecting}
             >
-              {isConnecting ? 'Connecting…' : 'Connect Wallet'}
+              {isConnecting ? "Connecting…" : "Connect Wallet"}
             </button>
           ) : (
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -64,28 +64,28 @@ export default function App() {
           )}
         </section>
 
-        {/* Tailwind check + simple intent form */}
+        {/* Tailwind + intent form */}
         <section className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
           <div className="flex items-center gap-2">
             <span className="text-indigo-600">⚡</span>
             <h2 className="text-lg font-medium">Tailwind</h2>
           </div>
           <p className="text-gray-600">
-            Якщо бачиш кольорові кнопки й акуратні картки — Tailwind підключений правильно.
+            Якщо бачиш кольорову кнопку й охайні картки — Tailwind підключений правильно.
           </p>
 
           <div className="flex gap-3">
             <input
               className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Intent note (довільний текст)…"
+              placeholder="Intent note (будь-який текст)…"
               value={value}
               onChange={(e) => setValue(e.target.value)}
             />
             <button
               className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 active:bg-indigo-800"
               onClick={() => {
-                toast.success(Intent submitted: )
-                setValue('')
+                toast.success(`Intent submitted: ${value || "ok"}`);
+                setValue("");
               }}
             >
               Submit Intent
@@ -110,5 +110,5 @@ export default function App() {
         </section>
       </main>
     </div>
-  )
+  );
 }
