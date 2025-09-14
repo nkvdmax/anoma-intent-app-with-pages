@@ -1,37 +1,27 @@
 ﻿/**
- * Канонізація (стабільне сортування ключів) + SHA-256 через Web Crypto.
- * Працює в браузері й у CI без node:crypto.
+ * Canonicalize + SHA-256 via Web Crypto (works in browser & GH Pages).
  */
 
 function canonicalize(obj) {
   if (obj === null || typeof obj !== "object") return obj;
   if (Array.isArray(obj)) return obj.map(canonicalize);
-  return Object.keys(obj).sort().reduce((acc, k) => {
-    acc[k] = canonicalize(obj[k]);
-    return acc;
-  }, {});
-}
-
-function encUtf8(str) {
-  return new TextEncoder().encode(str);
-}
-
-function toHex(u8) {
-  let out = "";
-  for (let i = 0; i < u8.length; i++) out += u8[i].toString(16).padStart(2, "0");
+  const out = {};
+  for (const k of Object.keys(obj).sort()) out[k] = canonicalize(obj[k]);
   return out;
 }
 
-/** Повертає hex-рядок SHA-256 від канонічного JSON */
+function encUtf8(str) { return new TextEncoder().encode(str); }
+function toHex(u8) { let s = ""; for (let i = 0; i < u8.length; i++) s += u8[i].toString(16).padStart(2,"0"); return s; }
+
+/** SHA-256 of canonical JSON, hex */
 export async function canonicalHash(obj) {
   const json = JSON.stringify(canonicalize(obj));
   const bytes = encUtf8(json);
-  const digest = await (globalThis.crypto?.subtle?.digest("SHA-256", bytes));
-  if (!digest) throw new Error("Web Crypto not available");
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
   return toHex(new Uint8Array(digest));
 }
 
-/** Збирає канонічний інтент і додає детермінований id */
+/** Build canonical intent + deterministic id */
 export async function makeCanonicalIntent(intent) {
   const id = await canonicalHash({
     chain: intent.chain,
