@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
-import { Toaster, toast } from 'sonner';
+import React, { useMemo, useState } from "react";
+import { Toaster, toast } from "sonner";
 
 function short(addr) {
-  if (!addr) return 'Ч';
-  return addr.length > 12 ? \\Е\\ : addr;
+  if (!addr) return "Ч";
+  return addr.length > 12 ? addr.slice(0, 6) + "Е" + addr.slice(-4) : addr;
 }
 
 function Section({ title, icon, children }) {
@@ -18,112 +18,162 @@ function Section({ title, icon, children }) {
   );
 }
 
+// ---------- EVM target network (Sepolia) ----------
+const EVM_TARGET = {
+  chainIdHex: "0xaa36a7", // 11155111
+  name: "Sepolia",
+  params: {
+    chainId: "0xaa36a7",
+    chainName: "Sepolia",
+    nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+    rpcUrls: ["https://rpc.sepolia.org", "https://sepolia.infura.io/v3/"],
+    blockExplorerUrls: ["https://sepolia.etherscan.io"],
+  },
+};
+
 export default function App() {
   // -------- EVM --------
-  const [evmAddress, setEvmAddress] = useState('');
-  const [evmChain, setEvmChain] = useState('');
-  const evmAvailable = typeof window !== 'undefined' && !!window.ethereum;
+  const [evmAddress, setEvmAddress] = useState("");
+  const [evmChain, setEvmChain] = useState("");
+  const evmAvailable = typeof window !== "undefined" && !!window.ethereum;
+  const onTarget = (evmChain || "").toLowerCase() === EVM_TARGET.chainIdHex;
+
+  async function getChainId() {
+    const ch = await window.ethereum.request({ method: "eth_chainId" });
+    setEvmChain(ch ?? "");
+    return ch;
+  }
+
+  async function switchEvmNetwork() {
+    if (!evmAvailable) return;
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: EVM_TARGET.chainIdHex }],
+      });
+      await getChainId();
+      toast.success("Switched to " + EVM_TARGET.name);
+    } catch (err) {
+      if (err?.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [EVM_TARGET.params],
+          });
+          await getChainId();
+          toast.success("Added & switched to " + EVM_TARGET.name);
+        } catch (addErr) {
+          console.error(addErr);
+          toast.error(addErr?.message ?? "Failed to add network");
+        }
+      } else {
+        console.error(err);
+        toast.error(err?.message ?? "Failed to switch network");
+      }
+    }
+  }
+
+  async function ensureTargetNetwork() {
+    const id = (await getChainId())?.toLowerCase();
+    if (id !== EVM_TARGET.chainIdHex) {
+      toast.info("Switching to " + EVM_TARGET.name + "Е");
+      await switchEvmNetwork();
+    }
+  }
 
   async function connectEvm() {
     try {
       if (!evmAvailable) {
-        toast.error('No EVM wallet found (window.ethereum not present).');
+        toast.error("No EVM wallet found (window.ethereum not present).");
         return;
       }
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const ch = await window.ethereum.request({ method: 'eth_chainId' });
-      setEvmAddress(accounts?.[0] ?? '');
-      setEvmChain(ch ?? '');
-      toast.success('EVM wallet connected');
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      await getChainId();
+      setEvmAddress(accounts?.[0] ?? "");
+      toast.success("EVM wallet connected");
     } catch (err) {
       console.error(err);
-      toast.error(err?.message ?? 'Failed to connect EVM wallet');
+      toast.error(err?.message ?? "Failed to connect EVM wallet");
     }
   }
 
   function disconnectEvm() {
-    // ” б≥льшост≥ EVM-провайдер≥в немаЇ €вного disconnect Ч просто прибираЇмо локальний стейт
-    setEvmAddress('');
-    setEvmChain('');
-    toast.info('EVM disconnected locally');
+    setEvmAddress("");
+    setEvmChain("");
+    toast.info("EVM disconnected locally");
   }
 
   async function signEvm() {
     try {
       if (!evmAddress) {
-        toast.error('Connect EVM first');
+        toast.error("Connect EVM first");
         return;
       }
-      const msg = 'Hello from Anoma Intent Prototype (EVM)';
-      // personal_sign expects hex or text; тут Ч звичайний текст
+      await ensureTargetNetwork();
+      const msg = "Hello from Anoma Intent Prototype (EVM)";
       const sig = await window.ethereum.request({
-        method: 'personal_sign',
+        method: "personal_sign",
         params: [msg, evmAddress],
       });
-      toast.success('EVM signed ?');
-      console.log('EVM signature:', sig);
+      toast.success("EVM signed ?");
+      console.log("EVM signature:", sig);
     } catch (err) {
       console.error(err);
-      toast.error(err?.message ?? 'EVM sign failed');
+      toast.error(err?.message ?? "EVM sign failed");
     }
   }
 
   // -------- Solana --------
-  const [solAddress, setSolAddress] = useState('');
-  const sol = (typeof window !== 'undefined' && (window.solana || window.phantom?.solana)) || null;
+  const [solAddress, setSolAddress] = useState("");
+  const sol = (typeof window !== "undefined" && (window.solana || window.phantom?.solana)) || null;
   const solAvailable = !!sol;
 
   async function connectSol() {
     try {
       if (!solAvailable) {
-        toast.error('No Solana wallet found (Phantom or compatible).');
+        toast.error("No Solana wallet found (Phantom or compatible).");
         return;
       }
       const res = await sol.connect();
       const addr = (res?.publicKey ?? sol.publicKey)?.toString();
-      setSolAddress(addr ?? '');
-      toast.success('Solana wallet connected');
+      setSolAddress(addr ?? "");
+      toast.success("Solana wallet connected");
     } catch (err) {
       console.error(err);
-      toast.error(err?.message ?? 'Failed to connect Solana wallet');
+      toast.error(err?.message ?? "Failed to connect Solana wallet");
     }
   }
 
   async function disconnectSol() {
-    try {
-      if (sol?.disconnect) {
-        await sol.disconnect();
-      }
-    } catch {}
-    setSolAddress('');
-    toast.info('Solana disconnected');
+    try { if (sol?.disconnect) await sol.disconnect(); } catch {}
+    setSolAddress("");
+    toast.info("Solana disconnected");
   }
 
   async function signSol() {
     try {
       if (!solAddress) {
-        toast.error('Connect Solana first');
+        toast.error("Connect Solana first");
         return;
       }
       if (!sol?.signMessage) {
-        toast.error('Wallet does not support signMessage');
+        toast.error("Wallet does not support signMessage");
         return;
       }
-      const msg = new TextEncoder().encode('Hello from Anoma Intent Prototype (Solana)');
-      const { signature } = await sol.signMessage(msg, 'utf8');
-      toast.success('Solana signed ?');
-      console.log('Solana signature (base64?):', signature);
+      const msg = new TextEncoder().encode("Hello from Anoma Intent Prototype (Solana)");
+      const { signature } = await sol.signMessage(msg, "utf8");
+      toast.success("Solana signed ?");
+      console.log("Solana signature:", signature);
     } catch (err) {
       console.error(err);
-      toast.error(err?.message ?? 'Solana sign failed');
+      toast.error(err?.message ?? "Solana sign failed");
     }
   }
 
   // -------- Sui --------
-  const [suiAddress, setSuiAddress] = useState('');
+  const [suiAddress, setSuiAddress] = useState("");
   const sui = useMemo(() => {
-    // де€к≥ гаманц≥ дають window.sui, ≥нш≥ Ч window.suiWallet
-    if (typeof window === 'undefined') return null;
+    if (typeof window === "undefined") return null;
     return window.sui || window.suiWallet || null;
   }, []);
   const suiAvailable = !!sui;
@@ -131,58 +181,56 @@ export default function App() {
   async function connectSui() {
     try {
       if (!suiAvailable || !sui.request) {
-        toast.error('No Sui wallet found or unsupported provider API.');
+        toast.error("No Sui wallet found or unsupported provider API.");
         return;
       }
-      // «апитуЇмо базов≥ перм≥шени
       try {
         await sui.request({
-          method: 'sui_requestPermissions',
-          params: [{ permissions: ['viewAccount', 'suggestTransactions'] }],
+          method: "sui_requestPermissions",
+          params: [{ permissions: ["viewAccount", "suggestTransactions"] }],
         });
       } catch {}
-      const accounts = await sui.request({ method: 'sui_accounts' });
+      const accounts = await sui.request({ method: "sui_accounts" });
       const addr = Array.isArray(accounts) ? accounts[0] : accounts?.data?.[0];
-      if (!addr) throw new Error('No Sui accounts returned');
+      if (!addr) throw new Error("No Sui accounts returned");
       setSuiAddress(addr);
-      toast.success('Sui wallet connected');
+      toast.success("Sui wallet connected");
     } catch (err) {
       console.error(err);
-      toast.error(err?.message ?? 'Failed to connect Sui wallet');
+      toast.error(err?.message ?? "Failed to connect Sui wallet");
     }
   }
 
   function disconnectSui() {
-    // б≥льшост≥ Sui-провайдер≥в достатньо прибрати локальний стейт
-    setSuiAddress('');
-    toast.info('Sui disconnected');
+    setSuiAddress("");
+    toast.info("Sui disconnected");
   }
 
   async function signSui() {
     try {
       if (!suiAddress) {
-        toast.error('Connect Sui first');
+        toast.error("Connect Sui first");
         return;
       }
       if (!sui?.request) {
-        toast.error('Sui provider does not support signMessage');
+        toast.error("Sui provider does not support signMessage");
         return;
       }
-      const message = new TextEncoder().encode('Hello from Anoma Intent Prototype (Sui)');
+      const message = new TextEncoder().encode("Hello from Anoma Intent Prototype (Sui)");
       const res = await sui.request({
-        method: 'sui_signMessage',
+        method: "sui_signMessage",
         params: { message },
       });
-      toast.success('Sui signed ?');
-      console.log('Sui signature:', res);
+      toast.success("Sui signed ?");
+      console.log("Sui signature:", res);
     } catch (err) {
       console.error(err);
-      toast.error(err?.message ?? 'Sui sign failed');
+      toast.error(err?.message ?? "Sui sign failed");
     }
   }
 
   // -------- Intent demo --------
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState("");
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -204,7 +252,7 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Wallets */}
         <Section title="Wallet" icon="??">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {/* EVM */}
             {!evmAddress ? (
               <button
@@ -215,10 +263,24 @@ export default function App() {
                 Connect EVM
               </button>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-lg bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">
-                  EVM: {short(evmAddress)} {evmChain && <span className="opacity-70">({evmChain})</span>}
+                  EVM: {short(evmAddress)}{" "}
+                  {evmChain && (
+                    <span className={!onTarget ? "text-rose-600" : "opacity-70"}>
+                      ({evmChain}) {!onTarget && "? Sepolia"}
+                    </span>
+                  )}
                 </span>
+                {!onTarget && (
+                  <button
+                    type="button"
+                    className="rounded-lg bg-violet-600 text-white px-3 py-2 text-sm hover:bg-violet-700"
+                    onClick={switchEvmNetwork}
+                  >
+                    Switch to Sepolia
+                  </button>
+                )}
                 <button
                   type="button"
                   className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
@@ -315,8 +377,8 @@ export default function App() {
             <button
               className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 active:bg-indigo-800"
               onClick={() => {
-                toast.success('Intent submitted!');
-                setNote('');
+                toast.success("Intent submitted!");
+                setNote("");
               }}
             >
               Submit Intent
