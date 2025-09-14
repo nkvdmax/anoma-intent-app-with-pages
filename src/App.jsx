@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
+import IntentBuilder from "./IntentBuilder.jsx";
 
 function short(addr) {
   if (!addr) return "—";
@@ -18,9 +19,8 @@ function Section({ title, icon, children }) {
   );
 }
 
-// ---------- EVM target network (Sepolia) ----------
 const EVM_TARGET = {
-  chainIdHex: "0xaa36a7", // 11155111
+  chainIdHex: "0xaa36a7",
   name: "Sepolia",
   params: {
     chainId: "0xaa36a7",
@@ -32,7 +32,7 @@ const EVM_TARGET = {
 };
 
 export default function App() {
-  // -------- EVM --------
+  // EVM
   const [evmAddress, setEvmAddress] = useState("");
   const [evmChain, setEvmChain] = useState("");
   const evmAvailable = typeof window !== "undefined" && !!window.ethereum;
@@ -123,7 +123,7 @@ export default function App() {
     }
   }
 
-  // -------- Solana --------
+  // Solana
   const [solAddress, setSolAddress] = useState("");
   const sol = (typeof window !== "undefined" && (window.solana || window.phantom?.solana)) || null;
   const solAvailable = !!sol;
@@ -170,7 +170,7 @@ export default function App() {
     }
   }
 
-  // -------- Sui --------
+  // Sui
   const [suiAddress, setSuiAddress] = useState("");
   const sui = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -229,7 +229,7 @@ export default function App() {
     }
   }
 
-  // -------- Intent demo --------
+  // Tailwind test
   const [note, setNote] = useState("");
 
   return (
@@ -253,153 +253,70 @@ export default function App() {
         {/* Wallets */}
         <Section title="Wallet" icon="??">
           <div className="flex flex-wrap gap-3">
-            {/* EVM */}
             {!evmAddress ? (
-              <button
-                type="button"
-                className="rounded-lg bg-indigo-50 text-indigo-700 px-3 py-2 text-sm hover:bg-indigo-100 active:bg-indigo-200"
-                onClick={connectEvm}
-              >
+              <button type="button" className="rounded-lg bg-indigo-50 text-indigo-700 px-3 py-2 text-sm hover:bg-indigo-100 active:bg-indigo-200" onClick={connectEvm}>
                 Connect EVM
               </button>
             ) : (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-lg bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">
-                  EVM: {short(evmAddress)}{" "}
-                  {evmChain && (
-                    <span className={!onTarget ? "text-rose-600" : "opacity-70"}>
-                      ({evmChain}) {!onTarget && "? Sepolia"}
-                    </span>
-                  )}
+                  EVM: {short(evmAddress)} {evmChain && (<span className={!onTarget ? "text-rose-600" : "opacity-70"}>({evmChain}) {!onTarget && "? Sepolia"}</span>)}
                 </span>
                 {!onTarget && (
-                  <button
-                    type="button"
-                    className="rounded-lg bg-violet-600 text-white px-3 py-2 text-sm hover:bg-violet-700"
-                    onClick={switchEvmNetwork}
-                  >
+                  <button type="button" className="rounded-lg bg-violet-600 text-white px-3 py-2 text-sm hover:bg-violet-700" onClick={switchEvmNetwork}>
                     Switch to Sepolia
                   </button>
                 )}
-                <button
-                  type="button"
-                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
-                  onClick={signEvm}
-                >
-                  Sign
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
-                  onClick={disconnectEvm}
-                >
-                  Disconnect
-                </button>
+                <button type="button" className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={signEvm}>Sign</button>
+                <button type="button" className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={disconnectEvm}>Disconnect</button>
               </div>
             )}
 
-            {/* Solana */}
             {!solAddress ? (
-              <button
-                type="button"
-                className="rounded-lg bg-indigo-50 text-indigo-700 px-3 py-2 text-sm hover:bg-indigo-100 active:bg-indigo-200"
-                onClick={connectSol}
-              >
+              <button type="button" className="rounded-lg bg-indigo-50 text-indigo-700 px-3 py-2 text-sm hover:bg-indigo-100 active:bg-indigo-200" onClick={connectSol}>
                 Connect Solana
               </button>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="rounded-lg bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">
-                  Solana: {short(solAddress)}
-                </span>
-                <button
-                  type="button"
-                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
-                  onClick={signSol}
-                >
-                  Sign
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
-                  onClick={disconnectSol}
-                >
-                  Disconnect
-                </button>
+                <span className="rounded-lg bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">Solana: {short(solAddress)}</span>
+                <button type="button" className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={signSol}>Sign</button>
+                <button type="button" className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={disconnectSol}>Disconnect</button>
               </div>
             )}
 
-            {/* Sui */}
             {!suiAddress ? (
-              <button
-                type="button"
-                className="rounded-lg bg-indigo-50 text-indigo-700 px-3 py-2 text-sm hover:bg-indigo-100 active:bg-indigo-200"
-                onClick={connectSui}
-              >
+              <button type="button" className="rounded-lg bg-indigo-50 text-indigo-700 px-3 py-2 text-sm hover:bg-indigo-100 active:bg-indigo-200" onClick={connectSui}>
                 Connect Sui
               </button>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="rounded-lg bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">
-                  Sui: {short(suiAddress)}
-                </span>
-                <button
-                  type="button"
-                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
-                  onClick={signSui}
-                >
-                  Sign
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
-                  onClick={disconnectSui}
-                >
-                  Disconnect
-                </button>
+                <span className="rounded-lg bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">Sui: {short(suiAddress)}</span>
+                <button type="button" className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={signSui}>Sign</button>
+                <button type="button" className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={disconnectSui}>Disconnect</button>
               </div>
             )}
           </div>
         </Section>
 
-        {/* Tailwind check + intent form */}
+        {/* Tailwind check */}
         <Section title="Tailwind" icon="?">
-          <p className="text-gray-600">
-            If you can see a colored button and normal text — Tailwind is working correctly.
-          </p>
+          <p className="text-gray-600">If you can see a colored button and normal text — Tailwind is working correctly.</p>
           <div className="flex gap-3">
-            <input
-              className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Intent note (any text)…"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-            <button
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 active:bg-indigo-800"
-              onClick={() => {
-                toast.success("Intent submitted!");
-                setNote("");
-              }}
-            >
+            <input className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Intent note (any text)…" value={note} onChange={(e) => setNote(e.target.value)} />
+            <button className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 active:bg-indigo-800" onClick={() => { toast.success("Intent submitted!"); setNote(""); }}>
               Submit Intent
             </button>
           </div>
         </Section>
 
+        {/* Intent section */}
+        <IntentBuilder />
+
         {/* Status cards */}
         <section className="grid sm:grid-cols-3 gap-4">
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-sm text-gray-500">Build</p>
-            <p className="mt-1 font-medium">Vite + Pages</p>
-          </div>
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-sm text-gray-500">UI</p>
-            <p className="mt-1 font-medium">Tailwind</p>
-          </div>
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-sm text-gray-500">Notifications</p>
-            <p className="mt-1 font-medium">Sonner</p>
-          </div>
+          <div className="rounded-xl border bg-white p-4"><p className="text-sm text-gray-500">Build</p><p className="mt-1 font-medium">Vite + Pages</p></div>
+          <div className="rounded-xl border bg-white p-4"><p className="text-sm text-gray-500">UI</p><p className="mt-1 font-medium">Tailwind</p></div>
+          <div className="rounded-xl border bg-white p-4"><p className="text-sm text-gray-500">Notifications</p><p className="mt-1 font-medium">Sonner</p></div>
         </section>
       </main>
     </div>
