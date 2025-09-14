@@ -23,11 +23,6 @@ function saveHistory(list) {
   localStorage.setItem(LS_KEY, JSON.stringify(list));
 }
 
-async function submitToSolver(bundle) {
-  // TODO: replace with real solver call
-  return { status: 'ok' };
-}
-
 export default function IntentBuilder() {
   const [chain, setChain] = useState('EVM');
   const [asset, setAsset] = useState('ETH');
@@ -68,8 +63,7 @@ export default function IntentBuilder() {
     const hash = await sha256Hex(message);
     const built = { intent, message, hash };
     setBundle(built);
-    const status = (res?.status ?? res?.ok ?? "ok");
-      toast.success(`Solver accepted (status: ${status})`);
+    toast.success('Intent built & hashed');
   }
 
   async function evmSign(message) {
@@ -110,11 +104,11 @@ export default function IntentBuilder() {
       const message = bundle.message;
       let signed = null;
 
-      if (chain === 'EVM' && window.ethereum) {
+      if (chain === 'EVM' && window?.ethereum) {
         signed = await evmSign(message);
-      } else if (chain === 'Solana' && window.solana?.signMessage) {
+      } else if (chain === 'Solana' && window?.solana?.signMessage) {
         signed = await solSign(message);
-      } else if (chain === 'Sui' && window.sui?.signMessage) {
+      } else if (chain === 'Sui' && window?.sui?.signMessage) {
         signed = await suiSign(message);
       } else {
         signed = { scheme: 'none', signature: '', note: 'No wallet API available to sign' };
@@ -134,8 +128,7 @@ export default function IntentBuilder() {
       list.unshift(record);
       saveHistory(list);
       setBundle(record);
-      const status = (res?.status ?? res?.ok ?? "ok");
-      toast.success(`Solver accepted (status: ${status})`);
+      toast.success('Intent signed & saved to history');
     } catch (err) {
       console.error(err);
       toast.error(err?.message || 'Failed to sign');
@@ -147,8 +140,7 @@ export default function IntentBuilder() {
   async function copyBundle() {
     if (!bundle) return toast.info('Nothing to copy yet');
     await navigator.clipboard.writeText(JSON.stringify(bundle, null, 2));
-    const status = (res?.status ?? res?.ok ?? "ok");
-      toast.success(`Solver accepted (status: ${status})`);
+    toast.success('Bundle copied to clipboard');
   }
 
   function downloadBundle() {
@@ -157,7 +149,8 @@ export default function IntentBuilder() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = intent_.json;
+    const fileBase = bundle?.id ? `intent-${bundle.id}` : 'intent';
+    a.download = `${fileBase}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -167,7 +160,8 @@ export default function IntentBuilder() {
     setBusy(true);
     try {
       const res = await submitToSolver(bundle);
-      toast.success(Solver accepted: # (status: ));
+      const status = (res?.status ?? res?.ok ?? 'ok');
+      toast.success(`Solver accepted (status: ${status})`);
     } catch (e) {
       console.error(e);
       toast.error(e?.message || 'Submit failed');
@@ -179,7 +173,7 @@ export default function IntentBuilder() {
   return (
     <section className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
       <div className="flex items-center gap-2">
-        <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-slate-100">??</span>
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-slate-100">🧩</span>
         <h2 className="text-lg font-medium">Intent</h2>
       </div>
 
@@ -254,4 +248,3 @@ export default function IntentBuilder() {
     </section>
   );
 }
-
