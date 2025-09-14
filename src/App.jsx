@@ -16,20 +16,20 @@ export default function App() {
 
   async function submitIntent() {
     if (!isConnected) {
-      toast.error("Підключи гаманець перед відправкою.");
+      toast.error("ПіпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
       return;
     }
     const text = intentText.trim();
     if (text.length < 3) {
-      toast.warning("Введи хоча б 3 символи.");
+      toast.warning("пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ 3 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
       return;
     }
 
     setSubmitting(true);
-    toast.loading("Відправляю інтент…");
+    toast.loading("ВіпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ");
 
     try {
-      // ?? Демонстраційний endpoint. Замінюй на власний solver/API.
+      // ?? пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ endpoint. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ solver/API.
       const res = await fetch("https://httpbin.org/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,13 +54,13 @@ export default function App() {
       };
       setHistory((prev) => [item, ...prev].slice(0, 10));
 
-      toast.success("Інтент відправлено!");
+      toast.success("пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!");
       setIntentText("");
     } catch (e) {
-      toast.error(`Помилка відправки: ${e.message}`);
+      toast.error(`пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: ${e.message}`);
     } finally {
       setSubmitting(false);
-      toast.dismiss(); // прибрати спінер
+      toast.dismiss(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     }
   }
 
@@ -82,23 +82,23 @@ export default function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {/* Гаманець + перемикач мереж */}
+        {/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ */}
         <Wallet />
 
-        {/* Форма інтенту */}
+        {/* пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */}
         <section className="bg-white rounded-xl border shadow-sm p-4 space-y-4">
           <div className="font-medium flex items-center gap-2">
             <span>?</span>
             <span>Tailwind</span>
           </div>
           <p className="text-slate-600">
-            Якщо ти бачиш кольорову кнопку і нормальний текст — Tailwind підключений правильно.
+            пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ Tailwind пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
           </p>
 
           <div className="flex gap-3">
             <input
               className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Intent note (будь-який текст)…"
+              placeholder="Intent note (пїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ)пїЅ"
               value={intentText}
               onChange={(e) => setIntentText(e.target.value)}
             />
@@ -107,12 +107,12 @@ export default function App() {
               disabled={!canSubmit}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:opacity-50"
             >
-              {submitting ? "Submitting…" : "Submit Intent"}
+              {submitting ? "SubmittingпїЅ" : "Submit Intent"}
             </button>
           </div>
         </section>
 
-        {/* Інфо-карточки */}
+        {/* пїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */}
         <section className="grid sm:grid-cols-3 gap-4">
           <div className="rounded-xl border bg-white p-4">
             <p className="text-sm text-slate-500">Build</p>
@@ -128,17 +128,17 @@ export default function App() {
           </div>
         </section>
 
-        {/* Історія інтентів */}
+        {/* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */}
         <section className="bg-white rounded-xl border shadow-sm p-4">
-          <div className="font-medium mb-3">Історія інтентів (локально)</div>
+          <div className="font-medium mb-3">пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)</div>
           {history.length === 0 ? (
-            <p className="text-slate-500 text-sm">Поки що порожньо.</p>
+            <p className="text-slate-500 text-sm">пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.</p>
           ) : (
             <ul className="space-y-2">
               {history.map((h) => (
                 <li key={h.id} className="border rounded-lg p-3">
                   <div className="text-sm text-slate-500">
-                    {new Date(h.time).toLocaleString()} • Chain {h.chainId}
+                    {new Date(h.time).toLocaleString()} пїЅ Chain {h.chainId}
                   </div>
                   <div className="mt-1 font-medium">{h.text}</div>
                   <div className="text-xs text-slate-500 mt-1">{h.address}</div>
