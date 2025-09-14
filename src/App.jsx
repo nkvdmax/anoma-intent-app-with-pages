@@ -84,7 +84,7 @@ export default function App() {
             <button
               className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 active:bg-indigo-800"
               onClick={() => {
-                toast.success(\Intent submitted: \\)
+                toast.success(Intent submitted: )
                 setValue('')
               }}
             >
