@@ -1,4 +1,4 @@
-ï»¿import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
 import IntentBuilder from "./IntentBuilder.jsx";
 import History from "./History.jsx";
@@ -65,7 +65,7 @@ export default function App() {
   async function ensureTargetNetwork() {
     const id = (await getChainId())?.toLowerCase();
     if (id !== EVM_TARGET.chainIdHex) {
-      toast.info("Switching to " + EVM_TARGET.name + "â€¦");
+      toast.info("Switching to " + EVM_TARGET.name + "…");
       await switchEvmNetwork();
     }
   }
@@ -289,9 +289,9 @@ export default function App() {
 
         {/* Tailwind check */}
         <Section title="Tailwind" icon="?">
-          <p className="text-gray-600">If you can see a colored button and normal text â€” Tailwind is working correctly.</p>
+          <p className="text-gray-600">If you can see a colored button and normal text — Tailwind is working correctly.</p>
           <div className="flex gap-3">
-            <input className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Intent note (any text)â€¦" value={note} onChange={(e) => setNote(e.target.value)} />
+            <input className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Intent note (any text)…" value={note} onChange={(e) => setNote(e.target.value)} />
             <button className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 active:bg-indigo-800" onClick={() => { toast.success("Intent submitted!"); setNote(""); }}>
               Submit Intent
             </button>
@@ -306,9 +306,11 @@ export default function App() {
           <div className="rounded-xl border bg-white p-4"><p className="text-sm text-gray-500">Build</p><p className="mt-1 font-medium">Vite + Pages</p></div>
           <div className="rounded-xl border bg-white p-4"><p className="text-sm text-gray-500">UI</p><p className="mt-1 font-medium">Tailwind</p></div>
           <div className="rounded-xl border bg-white p-4"><p className="text-sm text-gray-500">Notifications</p><p className="mt-1 font-medium">Sonner</p></div>
-        </section>`r`n`r`n        <History />`r`n      </main>
+        </section>`r`n`r`n        <History />`r`n        <History />
+      </main>
     </div>
   );
 }
+
 
 
