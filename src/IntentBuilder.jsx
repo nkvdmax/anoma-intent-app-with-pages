@@ -1,6 +1,7 @@
 ﻿import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { validRecipient, isPositiveAmount } from './lib/validate.js';
+import { ASSETS, resolveAssetAddress } from './lib/assets.js';
 import { submitToSolver } from './lib/solver.js';
 
 const LS_KEY = 'intent_history_v1';
@@ -49,15 +50,16 @@ export default function IntentBuilder() {
     return true;
   }
 
-  async function buildAndHash() {
-    if (!validateForm()) return;
-
-    const intent = {
+  async function buildAndHash() {  const resolved = await resolveAssetAddress(chain, asset);
+  const intent = {
       chain, asset,
       amount: amount.trim(),
       recipient: recipient.trim(),
       note: note.trim(),
-      ts: Date.now()
+      ts: Date.now(),
+      resolvedAddress: resolved?.address || null,
+      resolvedKind:    resolved?.kind    || null,
+      resolvedSource:  resolved?.source  || null
     };
     const message = JSON.stringify(intent);
     const hash = await sha256Hex(message);
@@ -189,8 +191,11 @@ export default function IntentBuilder() {
         </div>
         <div>
           <p className="text-xs text-gray-500 mb-1">Asset</p>
-          <input className="w-full rounded-lg border px-3 py-2"
-            value={asset} onChange={(e) => setAsset(e.target.value)} />
+          <select className="w-full rounded-lg border px-3 py-2"
+            value={asset}
+            onChange={(e) => setAsset(e.target.value)}>
+            {ASSETS.map(a => (<option key={a.symbol} value={a.symbol}>{a.symbol}</option>))}
+          </select> setAsset(e.target.value)} />
         </div>
         <div>
           <p className="text-xs text-gray-500 mb-1">Amount</p>
@@ -248,3 +253,4 @@ export default function IntentBuilder() {
     </section>
   );
 }
+
