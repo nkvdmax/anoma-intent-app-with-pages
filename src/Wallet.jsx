@@ -3,8 +3,14 @@ import { toast } from 'sonner';
 
 function short(addr, size = 4) {
   if (!addr) return '';
-  return addr.length <= 2 * size + 2 ? addr : ${addr.slice(0, 2 + size)}…;
+  const s = String(addr);
+  if (s.length <= 2 * size + 2) return s;
+
+  const head = s.slice(0, 2 + size);
+  const tail = s.slice(-size);
+  return `${head}...${tail}`; // <-- ASCII '...'
 }
+
 
 export default function Wallet() {
   const [evm, setEvm] = useState({ address: '', chainId: '' });
