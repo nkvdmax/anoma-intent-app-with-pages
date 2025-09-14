@@ -1,88 +1,188 @@
-п»їimport React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Toaster, toast } from 'sonner';
 
+function short(addr) {
+  if (!addr) return '—';
+  return addr.length > 12 ? \\…\\ : addr;
+}
+
+function Section({ title, icon, children }) {
+  return (
+    <section className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+      <div className="flex items-center gap-2">
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-slate-100">{icon}</span>
+        <h2 className="text-lg font-medium">{title}</h2>
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export default function App() {
+  // -------- EVM --------
+  const [evmAddress, setEvmAddress] = useState('');
+  const [evmChain, setEvmChain] = useState('');
+  const evmAvailable = typeof window !== 'undefined' && !!window.ethereum;
+
+  async function connectEvm() {
+    try {
+      if (!evmAvailable) {
+        toast.error('No EVM wallet found (window.ethereum not present).');
+        return;
+      }
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const ch = await window.ethereum.request({ method: 'eth_chainId' });
+      setEvmAddress(accounts?.[0] ?? '');
+      setEvmChain(ch ?? '');
+      toast.success('EVM wallet connected');
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message ?? 'Failed to connect EVM wallet');
+    }
+  }
+
+  function disconnectEvm() {
+    // У більшості EVM-провайдерів немає явного disconnect — просто прибираємо локальний стейт
+    setEvmAddress('');
+    setEvmChain('');
+    toast.info('EVM disconnected locally');
+  }
+
+  async function signEvm() {
+    try {
+      if (!evmAddress) {
+        toast.error('Connect EVM first');
+        return;
+      }
+      const msg = 'Hello from Anoma Intent Prototype (EVM)';
+      // personal_sign expects hex or text; тут — звичайний текст
+      const sig = await window.ethereum.request({
+        method: 'personal_sign',
+        params: [msg, evmAddress],
+      });
+      toast.success('EVM signed ?');
+      console.log('EVM signature:', sig);
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message ?? 'EVM sign failed');
+    }
+  }
+
+  // -------- Solana --------
+  const [solAddress, setSolAddress] = useState('');
+  const sol = (typeof window !== 'undefined' && (window.solana || window.phantom?.solana)) || null;
+  const solAvailable = !!sol;
+
+  async function connectSol() {
+    try {
+      if (!solAvailable) {
+        toast.error('No Solana wallet found (Phantom or compatible).');
+        return;
+      }
+      const res = await sol.connect();
+      const addr = (res?.publicKey ?? sol.publicKey)?.toString();
+      setSolAddress(addr ?? '');
+      toast.success('Solana wallet connected');
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message ?? 'Failed to connect Solana wallet');
+    }
+  }
+
+  async function disconnectSol() {
+    try {
+      if (sol?.disconnect) {
+        await sol.disconnect();
+      }
+    } catch {}
+    setSolAddress('');
+    toast.info('Solana disconnected');
+  }
+
+  async function signSol() {
+    try {
+      if (!solAddress) {
+        toast.error('Connect Solana first');
+        return;
+      }
+      if (!sol?.signMessage) {
+        toast.error('Wallet does not support signMessage');
+        return;
+      }
+      const msg = new TextEncoder().encode('Hello from Anoma Intent Prototype (Solana)');
+      const { signature } = await sol.signMessage(msg, 'utf8');
+      toast.success('Solana signed ?');
+      console.log('Solana signature (base64?):', signature);
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message ?? 'Solana sign failed');
+    }
+  }
+
+  // -------- Sui --------
+  const [suiAddress, setSuiAddress] = useState('');
+  const sui = useMemo(() => {
+    // деякі гаманці дають window.sui, інші — window.suiWallet
+    if (typeof window === 'undefined') return null;
+    return window.sui || window.suiWallet || null;
+  }, []);
+  const suiAvailable = !!sui;
+
+  async function connectSui() {
+    try {
+      if (!suiAvailable || !sui.request) {
+        toast.error('No Sui wallet found or unsupported provider API.');
+        return;
+      }
+      // Запитуємо базові пермішени
+      try {
+        await sui.request({
+          method: 'sui_requestPermissions',
+          params: [{ permissions: ['viewAccount', 'suggestTransactions'] }],
+        });
+      } catch {}
+      const accounts = await sui.request({ method: 'sui_accounts' });
+      const addr = Array.isArray(accounts) ? accounts[0] : accounts?.data?.[0];
+      if (!addr) throw new Error('No Sui accounts returned');
+      setSuiAddress(addr);
+      toast.success('Sui wallet connected');
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message ?? 'Failed to connect Sui wallet');
+    }
+  }
+
+  function disconnectSui() {
+    // більшості Sui-провайдерів достатньо прибрати локальний стейт
+    setSuiAddress('');
+    toast.info('Sui disconnected');
+  }
+
+  async function signSui() {
+    try {
+      if (!suiAddress) {
+        toast.error('Connect Sui first');
+        return;
+      }
+      if (!sui?.request) {
+        toast.error('Sui provider does not support signMessage');
+        return;
+      }
+      const message = new TextEncoder().encode('Hello from Anoma Intent Prototype (Sui)');
+      const res = await sui.request({
+        method: 'sui_signMessage',
+        params: { message },
+      });
+      toast.success('Sui signed ?');
+      console.log('Sui signature:', res);
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message ?? 'Sui sign failed');
+    }
+  }
+
+  // -------- Intent demo --------
   const [note, setNote] = useState('');
-
-  // addresses
-  const [evmAddr, setEvmAddr] = useState('');
-  const [solAddr, setSolAddr] = useState('');
-  const [suiAddr, setSuiAddr] = useState('');
-
-  // --- EVM (MetaMask / Rabby / etc.)
-  const connectEvm = async () => {
-    try {
-      const { ethereum } = window;
-      if (!ethereum) {
-        toast.error('No EVM wallet found. Install MetaMask/Rabby.');
-        return;
-      }
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      const addr = accounts?.[0];
-      if (addr) {
-        setEvmAddr(addr);
-        toast.success(`EVM connected: ${addr.slice(0, 6)}вЂ¦${addr.slice(-4)}`);
-      } else {
-        toast.info('EVM: no accounts returned');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(`EVM connect error: ${err.message ?? err}`);
-    }
-  };
-
-  // --- Solana (Phantom)
-  const connectSol = async () => {
-    try {
-      const provider = window?.solana;
-      if (!provider || !provider.isPhantom) {
-        toast.error('No Phantom wallet found. Install Phantom.');
-        return;
-      }
-      const res = await provider.connect(); // may prompt
-      const addr = res?.publicKey?.toString?.();
-      if (addr) {
-        setSolAddr(addr);
-        toast.success(`Solana connected: ${addr.slice(0, 6)}вЂ¦${addr.slice(-4)}`);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(`Solana connect error: ${err.message ?? err}`);
-    }
-  };
-
-  // --- Sui (Sui Wallet / Ethos / Surf; wallet-standard)
-  const connectSui = async () => {
-    try {
-      const sui = window?.suiWallet ?? window?.sui; // some wallets inject suiWallet, some sui
-      if (!sui) {
-        toast.error('No Sui wallet found. Install Sui Wallet / Ethos / Surf.');
-        return;
-      }
-      // Request permissions (wallet-standard compatible wallets)
-      if (sui.requestPermissions) {
-        await sui.requestPermissions();
-      }
-      let accounts = [];
-      if (sui.getAccounts) {
-        accounts = await sui.getAccounts();
-      } else if (sui.request) {
-        // Fallback (older interfaces)
-        const res = await sui.request({ method: 'sui_accounts' });
-        accounts = res ?? [];
-      }
-      const addr = accounts?.[0]?.address ?? accounts?.[0];
-      if (addr) {
-        setSuiAddr(addr);
-        toast.success(`Sui connected: ${String(addr).slice(0, 6)}вЂ¦${String(addr).slice(-4)}`);
-      } else {
-        toast.info('Sui: no accounts returned');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(`Sui connect error: ${err.message ?? err}`);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -103,72 +203,112 @@ export default function App() {
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Wallets */}
-        <section className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-slate-100">рџ”—</span>
-            <h2 className="text-lg font-medium">Wallet</h2>
-          </div>
-
+        <Section title="Wallet" icon="??">
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className="rounded-lg bg-indigo-600 text-white px-3 py-2 text-sm hover:bg-indigo-700 active:bg-indigo-800"
-              onClick={connectEvm}
-              title="MetaMask / Rabby / other EVM"
-            >
-              Connect EVM
-            </button>
+            {/* EVM */}
+            {!evmAddress ? (
+              <button
+                type="button"
+                className="rounded-lg bg-indigo-50 text-indigo-700 px-3 py-2 text-sm hover:bg-indigo-100 active:bg-indigo-200"
+                onClick={connectEvm}
+              >
+                Connect EVM
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="rounded-lg bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">
+                  EVM: {short(evmAddress)} {evmChain && <span className="opacity-70">({evmChain})</span>}
+                </span>
+                <button
+                  type="button"
+                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
+                  onClick={signEvm}
+                >
+                  Sign
+                </button>
+                <button
+                  type="button"
+                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
+                  onClick={disconnectEvm}
+                >
+                  Disconnect
+                </button>
+              </div>
+            )}
 
-            <button
-              type="button"
-              className="rounded-lg bg-purple-600 text-white px-3 py-2 text-sm hover:bg-purple-700 active:bg-purple-800"
-              onClick={connectSol}
-              title="Phantom (Solana)"
-            >
-              Connect Solana
-            </button>
+            {/* Solana */}
+            {!solAddress ? (
+              <button
+                type="button"
+                className="rounded-lg bg-indigo-50 text-indigo-700 px-3 py-2 text-sm hover:bg-indigo-100 active:bg-indigo-200"
+                onClick={connectSol}
+              >
+                Connect Solana
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="rounded-lg bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">
+                  Solana: {short(solAddress)}
+                </span>
+                <button
+                  type="button"
+                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
+                  onClick={signSol}
+                >
+                  Sign
+                </button>
+                <button
+                  type="button"
+                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
+                  onClick={disconnectSol}
+                >
+                  Disconnect
+                </button>
+              </div>
+            )}
 
-            <button
-              type="button"
-              className="rounded-lg bg-emerald-600 text-white px-3 py-2 text-sm hover:bg-emerald-700 active:bg-emerald-800"
-              onClick={connectSui}
-              title="Sui Wallet / Ethos / Surf"
-            >
-              Connect Sui
-            </button>
+            {/* Sui */}
+            {!suiAddress ? (
+              <button
+                type="button"
+                className="rounded-lg bg-indigo-50 text-indigo-700 px-3 py-2 text-sm hover:bg-indigo-100 active:bg-indigo-200"
+                onClick={connectSui}
+              >
+                Connect Sui
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="rounded-lg bg-emerald-50 text-emerald-700 px-3 py-2 text-sm">
+                  Sui: {short(suiAddress)}
+                </span>
+                <button
+                  type="button"
+                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
+                  onClick={signSui}
+                >
+                  Sign
+                </button>
+                <button
+                  type="button"
+                  className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
+                  onClick={disconnectSui}
+                >
+                  Disconnect
+                </button>
+              </div>
+            )}
           </div>
+        </Section>
 
-          <div className="grid sm:grid-cols-3 gap-3 pt-2 text-sm">
-            <div className="rounded-lg border bg-white px-3 py-2">
-              <p className="text-gray-500">EVM</p>
-              <p className="font-mono break-all">{evmAddr || 'вЂ”'}</p>
-            </div>
-            <div className="rounded-lg border bg-white px-3 py-2">
-              <p className="text-gray-500">Solana</p>
-              <p className="font-mono break-all">{solAddr || 'вЂ”'}</p>
-            </div>
-            <div className="rounded-lg border bg-white px-3 py-2">
-              <p className="text-gray-500">Sui</p>
-              <p className="font-mono break-all">{suiAddr || 'вЂ”'}</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Tailwind + form */}
-        <section className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-yellow-100">вљЎ</span>
-            <h2 className="text-lg font-medium">Tailwind</h2>
-          </div>
-
+        {/* Tailwind check + intent form */}
+        <Section title="Tailwind" icon="?">
           <p className="text-gray-600">
-            If you can see a colored button and normal text вЂ” Tailwind is working correctly.
+            If you can see a colored button and normal text — Tailwind is working correctly.
           </p>
-
           <div className="flex gap-3">
             <input
               className="flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Intent note (any text)вЂ¦"
+              placeholder="Intent note (any text)…"
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
@@ -182,15 +322,15 @@ export default function App() {
               Submit Intent
             </button>
           </div>
-        </section>
+        </Section>
 
-        {/* Status */}
+        {/* Status cards */}
         <section className="grid sm:grid-cols-3 gap-4">
           <div className="rounded-xl border bg-white p-4">
             <p className="text-sm text-gray-500">Build</p>
             <p className="mt-1 font-medium">Vite + Pages</p>
           </div>
-            <div className="rounded-xl border bg-white p-4">
+          <div className="rounded-xl border bg-white p-4">
             <p className="text-sm text-gray-500">UI</p>
             <p className="mt-1 font-medium">Tailwind</p>
           </div>
