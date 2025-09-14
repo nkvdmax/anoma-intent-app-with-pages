@@ -1,22 +1,38 @@
-п»їexport function canonicalizeIntent(raw) {
-  // СЃС‚Р°Р±С–Р»СЊРЅРёР№ С„РѕСЂРјР°С‚: РІС–РґСЃРѕСЂС‚РѕРІР°РЅС– РєР»СЋС‡С–, С„С–РєСЃРѕРІР°РЅС– С‚РёРїРё
-  const v = { version: '1.0.0',
-    chain: String(raw.chain || ''),
-    network: String(raw.network || ''),
-    asset: String(raw.asset || ''),
-    amount: String(raw.amount || ''),
-    recipient: String(raw.recipient || ''),
-    note: String(raw.note || ''),
-    ts: Number(raw.ts || Date.now()),
-  };
-  // РґРµС‚РµСЂРјС–РЅРѕРІР°РЅРµ СЃРѕСЂС‚СѓРІР°РЅРЅСЏ РєР»СЋС‡С–РІ
-  const sorted = Object.fromEntries(Object.entries(v).sort(([a],[b]) => a.localeCompare(b)));
-  return sorted;
+import { createHash } from "crypto";
+
+/**
+ * Детерміноване сортування ключів і серіалізація
+ */
+export function canonicalize(obj) {
+  if (obj === null || typeof obj !== "object") return obj;
+  if (Array.isArray(obj)) return obj.map(canonicalize);
+  return Object.keys(obj).sort().reduce((res, key) => {
+    res[key] = canonicalize(obj[key]);
+    return res;
+  }, {});
 }
-export function utf8Bytes(s){ return new TextEncoder().encode(String(s)); }
-export function hex(bytes){ return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join(''); }
-export async function sha256Hex(data){
-  const bytes = (data instanceof Uint8Array) ? data : utf8Bytes(data);
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return hex(new Uint8Array(digest));
+
+/**
+ * Створює SHA-256 хеш з канонічного JSON
+ */
+export function canonicalHash(obj) {
+  const canon = canonicalize(obj);
+  const json = JSON.stringify(canon);
+  return createHash("sha256").update(json).digest("hex");
+}
+
+/**
+ * Допоміжне: будує канонічний інтент
+ */
+export function makeCanonicalIntent(intent) {
+  return {
+    ...intent,
+    id: canonicalHash({
+      chain: intent.chain,
+      asset: intent.asset,
+      amount: intent.amount,
+      recipient: intent.recipient,
+      note: intent.note || "",
+    }),
+  };
 }
