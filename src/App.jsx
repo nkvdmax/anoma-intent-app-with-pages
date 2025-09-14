@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
-import IntentBuilder from "./IntentBuilder.jsx";`r`nimport History from "./History.jsx";
+import IntentBuilder from "./IntentBuilder.jsx";`r`nimport History.jsx";
 
 function short(addr) {
   if (!addr) return "—";
@@ -321,4 +321,5 @@ export default function App() {
     </div>
   );
 }
+
 
