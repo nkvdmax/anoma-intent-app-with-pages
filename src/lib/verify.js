@@ -1,24 +1,28 @@
-п»їimport * as ed25519 from "@noble/ed25519";
-
-// РїСЂРѕСЃС‚С– СѓС‚РёР»С–С‚Рё РїРµСЂРµС‚РІРѕСЂРµРЅРЅСЏ, С‰РѕР± РЅРµ С‚СЏРіРЅСѓС‚Рё РґРѕРґР°С‚РєРѕРІС– РїР°РєРµС‚Рё
-const hexToBytes = (hex) =>
-  typeof hex === "string"
-    ? Uint8Array.from((hex.startsWith("0x") ? hex.slice(2) : hex).match(/.{1,2}/g).map(b => parseInt(b, 16)))
-    : hex;
-
-const bytes = (x) =>
-  typeof x === "string" ? new TextEncoder().encode(x) : x;
+import * as ed from "@noble/ed25519";
 
 /**
- * Verify Ed25519 signature
- * @param {string|Uint8Array} publicKey - hex string (32 bytes) or Uint8Array
- * @param {string|Uint8Array} message   - utf-8 string or Uint8Array
- * @param {string|Uint8Array} signature - hex string (64 bytes) or Uint8Array
- * @returns {Promise<boolean>}
+ * Verify a bundle { sig, msg, pk }:
+ *  - sig: Uint8Array або hex-рядок ("0x..." або без префікса)
+ *  - pk : Uint8Array або hex-рядок
+ *  - msg: звичайний рядок (UTF-8)
+ * Повертає Promise<boolean>.
  */
-export async function verifyEd25519(publicKey, message, signature) {
-  const pk  = hexToBytes(publicKey);
-  const sig = hexToBytes(signature);
-  const msg = bytes(message);
-  return ed25519.verify(sig, msg, pk);
+export async function verifyBundle({ sig, msg, pk }) {
+  const hexToBytes = (hex) => {
+    const h = hex.startsWith("0x") ? hex.slice(2) : hex;
+    if (h.length % 2 !== 0) throw new Error("Invalid hex");
+    const arr = new Uint8Array(h.length / 2);
+    for (let i = 0; i < arr.length; i++) {
+      arr[i] = parseInt(h.substr(i * 2, 2), 16);
+    }
+    return arr;
+  };
+
+  const toBytes = (v) => (typeof v === "string" ? hexToBytes(v) : v);
+
+  const sigBytes = toBytes(sig);
+  const pkBytes  = toBytes(pk);
+  const msgBytes = new TextEncoder().encode(msg);
+
+  return await ed.verify(sigBytes, msgBytes, pkBytes);
 }
