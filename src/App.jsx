@@ -1,4 +1,4 @@
-import React from 'react';
+(import React from 'react';
 import { Toaster } from 'sonner';
 import IntentBuilder from './IntentBuilder.jsx';
 import History from './History.jsx';
@@ -7,6 +7,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <Toaster position="top-right" richColors />
+
       <header className="border-b bg-white">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl sm:text-2xl font-semibold">
@@ -36,10 +37,10 @@ export default function App() {
           </button>
         </section>
 
-        {/* Intent builder (hash + sign + save) */}
+        {/* Intent builder */}
         <IntentBuilder />
 
-        {/* History (verify / copy / delete) */}
+        {/* History */}
         <History />
 
         {/* Status cards */}
@@ -61,3 +62,4 @@ export default function App() {
     </div>
   );
 }
+)
