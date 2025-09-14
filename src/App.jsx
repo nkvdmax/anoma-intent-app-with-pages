@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
-import IntentBuilder from "./IntentBuilder.jsx";
+import IntentBuilder from "./IntentBuilder.jsx";`r`nimport History from "./History.jsx";
 
 function short(addr) {
   if (!addr) return "—";
@@ -317,8 +317,8 @@ export default function App() {
           <div className="rounded-xl border bg-white p-4"><p className="text-sm text-gray-500">Build</p><p className="mt-1 font-medium">Vite + Pages</p></div>
           <div className="rounded-xl border bg-white p-4"><p className="text-sm text-gray-500">UI</p><p className="mt-1 font-medium">Tailwind</p></div>
           <div className="rounded-xl border bg-white p-4"><p className="text-sm text-gray-500">Notifications</p><p className="mt-1 font-medium">Sonner</p></div>
-        </section>
-      </main>
+        </section>`r`n`r`n        <History />`r`n      </main>
     </div>
   );
 }
+

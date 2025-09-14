@@ -1,7 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { makeIntent, hashIntent } from "./lib/intent.js";
 import { toHex, toBase64 } from "./lib/utils.js";
 import { toast } from "sonner";
+import { pushHistory } from "./lib/storage.js";
+import { verifyBundle } from "./lib/verify.js";
+import { mockSolve, mockRelay } from "./lib/solver.js";
 
 export default function IntentBuilder() {
   const [chain, setChain] = useState("evm");
@@ -9,51 +12,52 @@ export default function IntentBuilder() {
   const [amount, setAmount] = useState("0.01");
   const [to, setTo] = useState("");
   const [hashHex, setHashHex] = useState("");
-  const [bundle, setBundle] = useState("");
+  const [bundleText, setBundleText] = useState("");
+  const [result, setResult] = useState("");
 
   const providerEvm = typeof window !== "undefined" ? window.ethereum : null;
   const providerSol = typeof window !== "undefined" ? (window.solana || window.phantom?.solana) : null;
   const providerSui = typeof window !== "undefined" ? (window.sui || window.suiWallet) : null;
 
   async function buildAndHash() {
-    try {
-      const intent = makeIntent({ chain, asset, amount, to });
-      const h = await hashIntent(intent);
-      setHashHex(toHex(h));
-      setBundle(JSON.stringify(intent, null, 2));
-      toast.success("Intent built");
-      return { intent, h };
-    } catch (e) {
-      console.error(e);
-      toast.error(e.message || "Failed to build intent");
-    }
+    const intent = makeIntent({ chain, asset, amount, to });
+    const h = await hashIntent(intent);
+    const hash = toHex(h);
+    setHashHex(hash);
+    setBundleText(JSON.stringify(intent, null, 2));
+    toast.success("Intent built");
+    setResult("");
+    return { intent, hash, h };
   }
 
   async function signIntent() {
     const built = await buildAndHash();
     if (!built) return;
-    const { intent, h } = built;
-    const msg = "anoma-intent:" + toHex(h);
+    const { intent, hash } = built;
+    const msg = "anoma-intent:" + hash;
 
     try {
-      let sig, scheme;
+      let sig, scheme, meta = {};
       if (chain === "evm") {
         if (!providerEvm) throw new Error("No EVM provider");
         const accounts = await providerEvm.request({ method: "eth_requestAccounts" });
         const from = accounts?.[0];
         if (!from) throw new Error("No EVM account");
         sig = await providerEvm.request({ method: "personal_sign", params: [msg, from] });
-        scheme = { type: "evm", encoding: "hex" }; // personal_sign returns 0xЕ hex
+        scheme = { type: "evm", encoding: "hex" };
+        meta.from = from;
       } else if (chain === "solana") {
         if (!providerSol) throw new Error("No Solana provider");
         const res = await providerSol.connect();
-        const pk = (res?.publicKey ?? providerSol.publicKey)?.toString();
-        if (!pk) throw new Error("No Solana account");
-        if (!providerSol.signMessage) throw new Error("Wallet does not support signMessage");
+        const pkObj = (res?.publicKey ?? providerSol.publicKey);
+        const pkBytes = pkObj?.toBytes?.();
+        if (!pkBytes) throw new Error("No Solana publicKey");
         const bytes = new TextEncoder().encode(msg);
+        if (!providerSol.signMessage) throw new Error("Wallet does not support signMessage");
         const out = await providerSol.signMessage(bytes, "utf8");
         sig = toBase64(out.signature);
         scheme = { type: "solana", encoding: "base64" };
+        meta.pubkeyB64 = toBase64(pkBytes);
       } else if (chain === "sui") {
         if (!providerSui?.request) throw new Error("No Sui provider");
         try {
@@ -62,25 +66,68 @@ export default function IntentBuilder() {
             params: [{ permissions: ["viewAccount", "suggestTransactions"] }],
           });
         } catch {}
-        const accounts = await providerSui.request({ method: "sui_accounts" });
-        const addr = Array.isArray(accounts) ? accounts[0] : accounts?.data?.[0];
-        if (!addr) throw new Error("No Sui account");
         const bytes = new TextEncoder().encode(msg);
         const out = await providerSui.request({ method: "sui_signMessage", params: { message: bytes } });
-        // де€к≥ гаманц≥ повертають { signature, messageBytes }
-        sig = out?.signature || out?.data?.signature || (out?.signedMessage && toBase64(out.signedMessage));
-        if (!sig) sig = typeof out === "string" ? out : JSON.stringify(out);
-        scheme = { type: "sui", encoding: (typeof sig === "string" && sig.startsWith("AQ==")) ? "base64" : "auto" };
+        sig = out?.signature || out?.data?.signature || (out?.signedMessage && toBase64(out.signedMessage)) || (typeof out==="string"? out : JSON.stringify(out));
+        scheme = { type: "sui", encoding: "auto" };
       } else {
         throw new Error("Unsupported chain");
       }
 
-      const bundleObj = { intent, hash: toHex(h), sig, scheme };
-      setBundle(JSON.stringify(bundleObj, null, 2));
+      const bundle = { intent, hash, sig, scheme, meta };
+      setBundleText(JSON.stringify(bundle, null, 2));
+      setResult("Signed ?");
       toast.success("Intent signed");
+      return bundle;
     } catch (e) {
       console.error(e);
       toast.error(e.message || "Sign failed");
+    }
+  }
+
+  function saveBundle() {
+    try {
+      const obj = JSON.parse(bundleText || "{}");
+      if (!obj.intent || !obj.hash) throw new Error("Nothing to save: sign or build first");
+      pushHistory({ bundle: obj });
+      toast.success("Saved to history");
+    } catch (e) {
+      toast.error(e.message);
+    }
+  }
+
+  async function verifyNow() {
+    try {
+      const obj = JSON.parse(bundleText || "{}");
+      const res = await verifyBundle(obj);
+      setResult("Verify: " + (res.ok ? "OK ?" : "FAIL ?" + (res.reason ? " Ц " + res.reason : "")));
+      toast[res.ok ? "success" : "error"](res.ok ? "Signature valid" : (res.reason || "Invalid signature"));
+    } catch (e) {
+      toast.error(e.message || "Cannot parse bundle");
+    }
+  }
+
+  async function sendToSolver() {
+    try {
+      const obj = JSON.parse(bundleText || "{}");
+      if (!obj.sig) throw new Error("Sign intent first");
+      const sol = await mockSolve(obj);
+      setResult("Solver: " + (sol.ok ? `OK (solutionId: ${sol.solutionId})` : "FAIL"));
+      setBundleText(JSON.stringify({ ...obj, solver: sol }, null, 2));
+    } catch (e) {
+      toast.error(e.message);
+    }
+  }
+
+  async function relayNow() {
+    try {
+      const obj = JSON.parse(bundleText || "{}");
+      if (!obj?.solver?.ok) throw new Error("Send to solver first");
+      const rel = await mockRelay(obj.solver);
+      setResult("Relayer: " + (rel.ok ? `OK (txPayload: ${rel.txPayload})` : "FAIL"));
+      setBundleText(JSON.stringify({ ...obj, relay: rel }, null, 2));
+    } catch (e) {
+      toast.error(e.message);
     }
   }
 
@@ -114,17 +161,18 @@ export default function IntentBuilder() {
         </div>
       </div>
 
-      <div className="flex gap-3">
-        <button className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={buildAndHash}>
-          Build & Hash
-        </button>
-        <button className="rounded-lg bg-indigo-600 text-white px-3 py-2 text-sm hover:bg-indigo-700" onClick={signIntent}>
-          Sign intent
-        </button>
-        {hashHex && <span className="text-sm text-gray-500">hash: <code className="font-mono">{hashHex.slice(0, 16)}Е</code></span>}
+      <div className="flex flex-wrap gap-3">
+        <button className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={buildAndHash}>Build & Hash</button>
+        <button className="rounded-lg bg-indigo-600 text-white px-3 py-2 text-sm hover:bg-indigo-700" onClick={signIntent}>Sign intent</button>
+        <button className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={saveBundle}>Save</button>
+        <button className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={verifyNow}>Verify</button>
+        <button className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={sendToSolver}>Send to solver</button>
+        <button className="rounded-lg bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200" onClick={relayNow}>Relay (dry-run)</button>
+        {hashHex && <span className="text-sm text-gray-500">hash: <code className="font-mono">{hashHex.slice(0,16)}Е</code></span>}
       </div>
 
-      <textarea className="w-full h-48 font-mono text-sm rounded-lg border p-3" value={bundle} onChange={()=>{}} placeholder="Bundle (intent / signed intent) will appear hereЕ" />
+      <textarea className="w-full h-56 font-mono text-sm rounded-lg border p-3" value={bundleText} onChange={e=>setBundleText(e.target.value)} placeholder="Bundle (intent / signed/solved/relayed) will appear hereЕ" />
+      {result && <div className="text-sm text-gray-600">{result}</div>}
     </section>
   );
 }
