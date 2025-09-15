@@ -11,8 +11,15 @@
     "postinstall": "node -e \"try{const fs=require('fs'),p='node_modules/.bin';if(fs.existsSync(p)){for(const f of fs.readdirSync(p)){try{fs.chmodSync(p+'/'+f,0o755)}catch{}}}}catch{}\""
   },
   "dependencies": {
+    "@noble/ed25519": "^3.0.0",
+    "@tanstack/react-query": "^5.87.4",
+    "ethers": "5.7.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "sonner": "^2.0.7",
+    "viem": "^2.37.5",
+    "wagmi": "^2.16.9",
+    "web3modal": "^1.9.12"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
