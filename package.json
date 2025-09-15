@@ -1,7 +1,7 @@
 {
   "name": "anoma-intent-app-with-pages",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,16 +10,7 @@
     "test": "vitest run",
     "postinstall": "node -e \"try{const fs=require('fs'),p='node_modules/.bin';if(fs.existsSync(p)){for(const f of fs.readdirSync(p)){try{fs.chmodSync(p+'/'+f,0o755)}catch{}}}}catch{}\""
   },
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.2.0",
-    "vitest": "^1.6.0"
-  },
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   }
 }
