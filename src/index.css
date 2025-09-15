@@ -1,11 +1,26 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root {
-  height: 100%;
+:root{ --grid: radial-gradient(1px 1px at 1px 1px, rgba(255,255,255,.08) 1px, transparent 0); }
+html,body,#root{ height:100%; }
+body{
+  @apply bg-ink text-white antialiased;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(63,139,255,.25), transparent 60%),
+    radial-gradient(900px 500px at 90% 0%, rgba(63,139,255,.18), transparent 50%),
+    linear-gradient(180deg, #0b0f1a, #0a1020 60%, #0b0f1a 100%);
 }
-
-body {
-  @apply bg-white text-black;
+.section{ @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8; }
+.card{ @apply bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm; }
+.btn{ @apply inline-flex items-center gap-2 rounded-xl px-5 py-2.5 font-medium transition bg-brand-500 hover:bg-brand-400 text-white; }
+.btn-ghost{ @apply inline-flex items-center gap-2 rounded-xl px-5 py-2.5 font-medium bg-white/5 hover:bg-white/10 border border-white/10; }
+.btn {
+  @apply inline-flex items-center gap-2 rounded-xl px-6 py-3 font-semibold transition text-white;
+  background: linear-gradient(90deg, #3f8bff, #2e6ff0);
+  box-shadow: 0 0 25px rgba(63,139,255,0.5);
+}
+.btn:hover {
+  background: linear-gradient(90deg, #5faaff, #3f8bff);
+  box-shadow: 0 0 35px rgba(63,139,255,0.8);
 }
