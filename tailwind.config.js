@@ -4,14 +4,17 @@ export default {
   theme: {
     extend: {
       colors: {
+        ink: "#0a0b0f",     // чорний фон
+        paper: "#ffffff",   // білий
         brand: {
-          50:"#eef8ff",100:"#d9ecff",200:"#bfe0ff",300:"#96caff",
-          400:"#5faaff",500:"#3f8bff",600:"#2e6ff0",700:"#2357c2",
-          800:"#1e4698",900:"#1b3b7a"
-        },
-        ink: "#0b0f1a"
+          50:"#fff1f2",100:"#ffe4e6",200:"#fecdd3",300:"#fda4af",
+          400:"#fb7185",500:"#ef4444",600:"#dc2626",700:"#b91c1c",
+          800:"#991b1b",900:"#7f1d1d"
+        }
       },
-      dropShadow: { glow: "0 0 35px rgba(63,139,255,.55)" }
+      dropShadow: {
+        redglow: "0 0 30px rgba(239,68,68,.55)"
+      }
     },
   },
   plugins: [],

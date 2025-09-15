@@ -1,5 +1,4 @@
 ﻿import React from "react";
-
 export default function CTA() {
   return (
     <section id="how" className="section py-16">

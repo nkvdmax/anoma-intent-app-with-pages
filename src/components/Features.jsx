@@ -14,10 +14,10 @@ export default function Features() {
     <section id="features" className="section py-20">
       <div className="text-center">
         <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-          <span className="text-gradient">Built for clarity</span>
+          <span className="text-gradient-red">Why it stands out</span>
         </h2>
         <p className="text-white/70 mt-4 max-w-2xl mx-auto">
-          Clean components, subtle glow, and focused copy — like anoma.money.
+          Red/black minimalism + soft glow. Focus on outcomes, not steps.
         </p>
       </div>
 
@@ -25,13 +25,13 @@ export default function Features() {
         {items.map(({ Icon, title, desc }, i) => (
           <motion.div
             key={title}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.4, delay: i * 0.05 }}
-            className="card hover:bg-white/[0.07] transition"
+            transition={{ duration: 0.35, delay: i * 0.05 }}
+            className="card hover:bg-white/[0.08] transition"
           >
-            <div className="h-11 w-11 rounded-xl bg-brand-500/15 border border-brand-500/30 flex items-center justify-center drop-shadow-glow">
+            <div className="h-11 w-11 rounded-xl bg-brand-600/20 border border-brand-600/40 flex items-center justify-center drop-shadow-redglow">
               <Icon className="h-5 w-5 text-brand-300" />
             </div>
             <div className="mt-4 font-semibold">{title}</div>

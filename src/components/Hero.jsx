@@ -3,30 +3,35 @@ import { motion } from "framer-motion";
 
 export default function Hero({ onConnect }) {
   return (
-    <section className="section min-h-[80vh] flex items-center justify-center text-center relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-500/15 via-transparent to-brand-400/15 blur-3xl"></div>
+    <section className="section pt-14 pb-16 relative">
+      <div className="grid lg:grid-cols-2 gap-10 items-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9 }}
+        >
+          <h1 className="text-5xl sm:text-7xl font-extrabold leading-tight">
+            <span className="text-gradient-red">Intent-based swaps</span>
+          </h1>
+          <p className="mt-6 text-white/70 max-w-xl">
+            Clean, fast and secure. Red/black minimalism with subtle glow. Connect a wallet and create an intent.
+          </p>
+          <div className="mt-8 flex gap-3">
+            <button className="btn" onClick={onConnect}>Connect Wallet</button>
+            <a className="btn-ghost" href="#features">Learn more</a>
+          </div>
+        </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        className="relative z-10"
-      >
-        <h1 className="text-5xl sm:text-7xl font-extrabold leading-tight tracking-tight">
-          <span className="text-gradient">Intent-based swaps</span>
-        </h1>
-        <p className="mt-6 text-lg text-white/70 max-w-2xl mx-auto">
-          Minimal, fast, auditable — inspired by anoma.money aesthetics.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-4 justify-center">
-          <button className="btn shadow-lg shadow-brand-500/30 hover:shadow-brand-400/40" onClick={onConnect}>
-            Connect Wallet
-          </button>
-          <a href="#features" className="btn-ghost hover:bg-white/20 hover:text-white">
-            Learn More
-          </a>
-        </div>
-      </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: .95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: .8, delay: .15 }}
+          className="card relative overflow-hidden flex items-center justify-center"
+        >
+          <img src="/img/red-gem.png" alt="Red gem" className="w-64 h-64 object-contain drop-shadow-redglow" />
+          <div className="absolute inset-0 pointer-events-none" style={{backgroundImage: "radial-gradient(1px 1px at 1px 1px, rgba(255,255,255,.09) 1px, transparent 0)", backgroundSize: "22px 22px"}}/>
+        </motion.div>
+      </div>
     </section>
   );
 }
