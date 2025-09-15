@@ -1,6 +1,7 @@
-ï»¿import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { validRecipient, isPositiveAmount } from './lib/validate.js';
+import { ASSETS, resolveAssetAddress } from './lib/assets.js';
 import { submitToSolver } from './lib/solver.js';
 
 const LS_KEY = 'intent_history_v1';
@@ -21,11 +22,6 @@ function loadHistory() {
 }
 function saveHistory(list) {
   localStorage.setItem(LS_KEY, JSON.stringify(list));
-}
-
-async function submitToSolver(bundle) {
-  // TODO: replace with real solver call
-  return { status: 'ok' };
 }
 
 export default function IntentBuilder() {
@@ -54,22 +50,22 @@ export default function IntentBuilder() {
     return true;
   }
 
-  async function buildAndHash() {
-    if (!validateForm()) return;
-
-    const intent = {
+  async function buildAndHash() {  const resolved = await resolveAssetAddress(chain, asset);
+  const intent = {
       chain, asset,
       amount: amount.trim(),
       recipient: recipient.trim(),
       note: note.trim(),
-      ts: Date.now()
+      ts: Date.now(),
+      resolvedAddress: resolved?.address || null,
+      resolvedKind:    resolved?.kind    || null,
+      resolvedSource:  resolved?.source  || null
     };
     const message = JSON.stringify(intent);
     const hash = await sha256Hex(message);
     const built = { intent, message, hash };
     setBundle(built);
-    const status = (res?.status ?? res?.ok ?? "ok");
-      toast.success(`Solver accepted (status: ${status})`);
+    toast.success('Intent built & hashed');
   }
 
   async function evmSign(message) {
@@ -110,11 +106,11 @@ export default function IntentBuilder() {
       const message = bundle.message;
       let signed = null;
 
-      if (chain === 'EVM' && window.ethereum) {
+      if (chain === 'EVM' && window?.ethereum) {
         signed = await evmSign(message);
-      } else if (chain === 'Solana' && window.solana?.signMessage) {
+      } else if (chain === 'Solana' && window?.solana?.signMessage) {
         signed = await solSign(message);
-      } else if (chain === 'Sui' && window.sui?.signMessage) {
+      } else if (chain === 'Sui' && window?.sui?.signMessage) {
         signed = await suiSign(message);
       } else {
         signed = { scheme: 'none', signature: '', note: 'No wallet API available to sign' };
@@ -134,8 +130,7 @@ export default function IntentBuilder() {
       list.unshift(record);
       saveHistory(list);
       setBundle(record);
-      const status = (res?.status ?? res?.ok ?? "ok");
-      toast.success(`Solver accepted (status: ${status})`);
+      toast.success('Intent signed & saved to history');
     } catch (err) {
       console.error(err);
       toast.error(err?.message || 'Failed to sign');
@@ -147,8 +142,7 @@ export default function IntentBuilder() {
   async function copyBundle() {
     if (!bundle) return toast.info('Nothing to copy yet');
     await navigator.clipboard.writeText(JSON.stringify(bundle, null, 2));
-    const status = (res?.status ?? res?.ok ?? "ok");
-      toast.success(`Solver accepted (status: ${status})`);
+    toast.success('Bundle copied to clipboard');
   }
 
   function downloadBundle() {
@@ -157,7 +151,8 @@ export default function IntentBuilder() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = intent_.json;
+    const fileBase = bundle?.id ? `intent-${bundle.id}` : 'intent';
+    a.download = `${fileBase}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -167,7 +162,8 @@ export default function IntentBuilder() {
     setBusy(true);
     try {
       const res = await submitToSolver(bundle);
-      toast.success(Solver accepted: # (status: ));
+      const status = (res?.status ?? res?.ok ?? 'ok');
+      toast.success(`Solver accepted (status: ${status})`);
     } catch (e) {
       console.error(e);
       toast.error(e?.message || 'Submit failed');
@@ -195,8 +191,11 @@ export default function IntentBuilder() {
         </div>
         <div>
           <p className="text-xs text-gray-500 mb-1">Asset</p>
-          <input className="w-full rounded-lg border px-3 py-2"
-            value={asset} onChange={(e) => setAsset(e.target.value)} />
+          <select className="w-full rounded-lg border px-3 py-2"
+            value={asset}
+            onChange={(e) => setAsset(e.target.value)}>
+            {ASSETS.map(a => (<option key={a.symbol} value={a.symbol}>{a.symbol}</option>))}
+          </select> setAsset(e.target.value)} />
         </div>
         <div>
           <p className="text-xs text-gray-500 mb-1">Amount</p>
@@ -206,7 +205,7 @@ export default function IntentBuilder() {
         <div>
           <p className="text-xs text-gray-500 mb-1">Recipient</p>
           <input className="w-full rounded-lg border px-3 py-2"
-            placeholder={chain === 'EVM' ? '0xâ€¦ address' : (chain === 'Solana' ? 'base58 address' : '0xâ€¦ Sui address')}
+            placeholder={chain === 'EVM' ? '0x… address' : (chain === 'Solana' ? 'base58 address' : '0x… Sui address')}
             value={recipient} onChange={(e) => setRecipient(e.target.value)} />
         </div>
       </div>
@@ -254,4 +253,5 @@ export default function IntentBuilder() {
     </section>
   );
 }
+
 
