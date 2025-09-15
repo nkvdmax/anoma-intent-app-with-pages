@@ -2,8 +2,8 @@
 
 export default function Header() {
   return (
-    <header className="section py-5">
-      <div className="flex items-center justify-between">
+    <header className="sticky top-0 z-40 backdrop-blur-md bg-black/20 border-b border-white/10">
+      <div className="section py-4 flex items-center justify-between">
         <a href="/" className="flex items-center gap-3">
           <div className="h-9 w-9 rounded-xl bg-brand-500/20 border border-brand-500/30 flex items-center justify-center drop-shadow-glow">
             <span className="text-brand-300 font-bold">A</span>

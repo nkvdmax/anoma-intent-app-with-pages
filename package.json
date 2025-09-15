@@ -14,6 +14,7 @@
     "@tanstack/react-query": "^5.87.4",
     "ethers": "^5.7.2",
     "framer-motion": "^12.23.12",
+    "lucide-react": "^0.544.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sonner": "^2.0.7",

@@ -1,24 +1,42 @@
 ﻿import React from "react";
+import { Shield, Workflow, Zap, Layers } from "lucide-react";
+import { motion } from "framer-motion";
 
 const items = [
-  { t: "Intent-based", d: "Describe the outcome; the app figures out routes and matchers." },
-  { t: "Secure", d: "Isolated flows, no secrets in the client, safe RPC usage." },
-  { t: "Composable", d: "Works with wagmi/viem and your existing components." },
-  { t: "Auditable", d: "Deterministic build and clear on-chain actions." },
+  { Icon: Workflow, title: "Intent-based", desc: "Describe outcome; routes & matchers are derived." },
+  { Icon: Shield,   title: "Secure",       desc: "Isolated flows, safe RPC, no secrets in client." },
+  { Icon: Layers,   title: "Composable",   desc: "Works with wagmi/viem and your components." },
+  { Icon: Zap,      title: "Fast",         desc: "Lean UI and tuned build for instant loads." },
 ];
 
 export default function Features() {
   return (
-    <section id="features" className="section py-16">
-      <h2 className="text-3xl font-semibold">Why this approach</h2>
-      <p className="text-white/70 mt-2 max-w-2xl">A compact feature set mirroring the reference site’s structure.</p>
+    <section id="features" className="section py-20">
+      <div className="text-center">
+        <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
+          <span className="text-gradient">Built for clarity</span>
+        </h2>
+        <p className="text-white/70 mt-4 max-w-2xl mx-auto">
+          Clean components, subtle glow, and focused copy — like anoma.money.
+        </p>
+      </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        {items.map((x) => (
-          <div key={x.t} className="card">
-            <div className="text-brand-300 font-medium">{x.t}</div>
-            <div className="text-white/70 mt-2 text-sm">{x.d}</div>
-          </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-12">
+        {items.map(({ Icon, title, desc }, i) => (
+          <motion.div
+            key={title}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.4, delay: i * 0.05 }}
+            className="card hover:bg-white/[0.07] transition"
+          >
+            <div className="h-11 w-11 rounded-xl bg-brand-500/15 border border-brand-500/30 flex items-center justify-center drop-shadow-glow">
+              <Icon className="h-5 w-5 text-brand-300" />
+            </div>
+            <div className="mt-4 font-semibold">{title}</div>
+            <div className="text-white/70 text-sm mt-2">{desc}</div>
+          </motion.div>
         ))}
       </div>
     </section>
