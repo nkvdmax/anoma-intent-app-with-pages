@@ -1,7 +1,7 @@
 ﻿import React, { useMemo, useState } from "react";
 import WormholeConnect from "@wormhole-foundation/wormhole-connect";
 import "styled-components";
-import { validateAddress } from "../lib/explorers";
+import { validateAddress } from "../lib/explorers.js";
 
 export default function CrossChain() {
   const config = useMemo(() => ({
@@ -78,4 +78,7 @@ export default function CrossChain() {
     </section>
   );
 }
+
+
+
 

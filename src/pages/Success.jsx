@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
-import { explorers } from "../lib/explorers";
+import { explorers } from "../lib/explorers.js";
 import { createPublicClient, http } from "viem";
 import { Connection, clusterApiUrl } from "@solana/web3.js";
 
@@ -113,3 +113,4 @@ export default function Success() {
     </section>
   );
 }
+
