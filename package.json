@@ -1,11 +1,11 @@
-{
+﻿{
   "name": "anoma-intent-app-with-pages",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build",`n    "build:gh": "vite build --base=/anoma-intent-app-with-pages/",
     "preview": "vite preview",
     "test": "vitest run"
   },
@@ -44,3 +44,4 @@
     "node": "20.x"
   }
 }
+
