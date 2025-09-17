@@ -1,6 +1,15 @@
 ﻿import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  base: "/",           // Vercel -> "/", GitHub Pages -> "/anoma-intent-app-with-pages/"
-  build: { outDir: "dist", sourcemap: false }
+  base: "/anoma-intent-app-with-pages/",
+  plugins: [react()],
+  optimizeDeps: {
+    include: [
+      "@wormhole-foundation/wormhole-connect",
+      "@solana/web3.js",
+      
+    ],
+  },
 });
+
