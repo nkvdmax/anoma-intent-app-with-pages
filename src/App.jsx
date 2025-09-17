@@ -1,20 +1,17 @@
 ﻿import React from "react";
-import Header from "./components/Header.jsx";
-import Hero from "./components/Hero.jsx";
-import Features from "./components/Features.jsx";
-import CTA from "./components/CTA.jsx";
-import Footer from "./components/Footer.jsx";
-
-function mockConnect(){ alert("Here you can open Web3Modal / wagmi connect flow."); }
+import Header from "./components/Header";
+import Hero from "./components/Hero";
+import Features from "./components/Features";
+import Footer from "./components/Footer";
+import CrossChain from "./pages/CrossChain";
+import Success from "./pages/Success";
 
 export default function App() {
-  return (
-    <>
-      <Header />
-      <Hero onConnect={mockConnect} />
-      <Features />
-      <CTA />
-      <Footer />
-    </>
-  );
+  const hash = typeof window !== "undefined" ? window.location.hash : "";
+  let page = (<><Hero /><Features /></>);
+
+  if (hash.startsWith("#/pay")) page = <CrossChain />;
+  if (hash.startsWith("#/success")) page = <Success />;
+
+  return (<><Header />{page}<Footer /></>);
 }
