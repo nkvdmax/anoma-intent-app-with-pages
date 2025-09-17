@@ -29,7 +29,7 @@ export default function Features() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.35, delay: i * 0.05 }}
-            className="card hover:bg-white/[0.08] transition"
+            className="card gradient-border hover:bg-white/[0.08] transition"
           >
             <div className="h-11 w-11 rounded-xl bg-brand-600/20 border border-brand-600/40 flex items-center justify-center drop-shadow-redglow">
               <Icon className="h-5 w-5 text-brand-300" />
@@ -42,3 +42,4 @@ export default function Features() {
     </section>
   );
 }
+

@@ -179,3 +179,49 @@ footer::before{
   transform: translateY(-4px) scale(1.01);
   box-shadow: 0 12px 40px rgba(255,61,90,.22);
 }
+
+/* ===== Premium add-ons ===== */
+.gradient-border{
+  position: relative;
+  border-radius: 18px; /* збігається з .card */
+}
+.gradient-border::before{
+  content:"";
+  position:absolute; inset:0;
+  padding:1px; border-radius:inherit;
+  background: linear-gradient(135deg,#ff3d5a,#ff7a7a 45%,#7a99ff 80%);
+  -webkit-mask: 
+    linear-gradient(#000 0 0) content-box, 
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events:none;
+}
+
+/* outline-кнопка з градієнтом */
+.btn-outline{
+  display:inline-flex; align-items:center; gap:.5rem;
+  padding:.65rem 1rem; border-radius:12px;
+  background: transparent;
+  color:#ffdbe1; font-weight:600;
+  position:relative; isolation:isolate;
+}
+.btn-outline::before{
+  content:""; position:absolute; inset:0; border-radius:inherit;
+  padding:1px; background:linear-gradient(135deg,#ff3d5a,#ff7a7a);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  opacity:.9; transition:opacity .15s ease, filter .2s ease;
+}
+.btn-outline:hover::before{ opacity:1; filter:saturate(1.2) }
+.btn-outline:active{ transform:translateY(0) }
+
+/* легке сяйво під курсором */
+body::after{
+  content:""; position:fixed; width:260px; height:260px; border-radius:50%;
+  background: radial-gradient(closest-side, rgba(255,61,90,.18), transparent 65%);
+  pointer-events:none; transform:translate(-50%,-50%);
+  top:var(--mx, -1000px); left:var(--my, -1000px);
+  mix-blend-mode: screen; transition: opacity .2s ease;
+  opacity:.7;
+}
