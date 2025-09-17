@@ -2,7 +2,6 @@
 import { motion } from "framer-motion";
 
 export default function Hero({ onConnect }) {
-  // базовий шлях для GitHub Pages
   const base = import.meta.env.BASE_URL;
 
   return (
@@ -48,3 +47,5 @@ export default function Hero({ onConnect }) {
     </section>
   );
 }
+
+
