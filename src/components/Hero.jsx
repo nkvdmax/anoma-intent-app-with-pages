@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { motion } from "framer-motion";
 
 export default function Hero({ onConnect }) {
@@ -28,9 +28,9 @@ export default function Hero({ onConnect }) {
           initial={{ opacity: 0, scale: .95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: .8, delay: .15 }}
-          className="card relative overflow-hidden flex items-center justify-center"
+          className="card relative overflow-hidden flex items-center justify-center min-h-[260px] lg:min-h-[320px]"
         >
-          <img 
+          <img loading="lazy" width="256" height="256" 
             src={`${base}img/red-gem.png`} 
             alt="Red gem" 
             className="w-64 h-64 object-contain drop-shadow-redglow" 
@@ -47,6 +47,8 @@ export default function Hero({ onConnect }) {
     </section>
   );
 }
+
+
 
 
 
