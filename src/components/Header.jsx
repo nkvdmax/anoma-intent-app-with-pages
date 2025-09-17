@@ -1,7 +1,7 @@
-п»їimport React from "react";
+import React from "react";
 
 export default function Header() {
-  // Р±Р°Р·РѕРІРёР№ С€Р»СЏС… РґР»СЏ GitHub Pages
+  // базовий шлях для GitHub Pages
   const base = import.meta.env.BASE_URL;
 
   return (
