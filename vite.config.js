@@ -1,11 +1,18 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path from "node:path";
 
-export default defineConfig(() => ({
+export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: { "@": path.resolve(__dirname, "./src") },
+  optimizeDeps: {
+    include: [
+      "@wormhole-foundation/wormhole-connect",
+      "styled-components",
+      "@solana/web3.js",
+      "@mysten/sui.js"
+    ]
   },
-  base: process.env.VERCEL === "1" ? "/" : "/anoma-intent-app-with-pages/",
-}));
+  build: {
+    // зрідка допомагає, якщо всередині є CJS-файли
+    commonjsOptions: { include: [/node_modules/] }
+  }
+});
